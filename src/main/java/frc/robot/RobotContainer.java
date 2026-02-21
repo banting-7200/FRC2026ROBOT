@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import dev.doglog.DogLog;
+import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -97,6 +99,10 @@ public class RobotContainer {
 
   // Constructor of the main class
   public RobotContainer() {
+
+    // Logging configuration
+    DogLog.setOptions(new DogLogOptions().withCaptureDs(true));
+    DogLog.setPdh(PDH);
 
     //  intake = new IntakeSubsystem();
     // feeder = new FeederSubsystem();

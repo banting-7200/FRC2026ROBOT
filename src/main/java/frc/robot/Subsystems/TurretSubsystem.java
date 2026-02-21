@@ -11,12 +11,14 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.TurretConstants;
+import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -36,6 +38,7 @@ public class TurretSubsystem extends SubsystemBase {
   double currentYaw = 0;
   double currentPitch = 0;
 
+  DoubleEntry flywheelSetpoint;
   double flywheelSpeed = 0;
 
   boolean isSpinning = false;
@@ -62,9 +65,13 @@ public class TurretSubsystem extends SubsystemBase {
 
     flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
     flywheelConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    flywheelConfig.closedLoop.pid(0.0000, 0, 0).feedForward.kV(0.00016); // 0.00016
+    // Initial PID configuration. Set this from Constants when done tuning.
+    flywheelConfig.closedLoop.pid(0.0000, 0, 0).feedForward.kV(0.00016);
     flyWheelMotor.configure(
         flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // Set the default setpoint to 4000 RPM, which is a good starting point for testing. Set this
+    // from Constants when done tuning.
+    flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 4000);
 
     //    pitchConfig.inverted(false).idleMode(IdleMode.kBrake);
     //    pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
@@ -90,15 +97,15 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    // System.out.println(flyWheelMotor.getEncoder().getVelocity());
-    // flywheelController.setSetpoint(flywheelSpeed, ControlType.kVelocity);
+    // // System.out.println(flyWheelMotor.getEncoder().getVelocity());
+    System.out.println(flywheelSetpoint.get());
+    // flywheelController.setSetpoint(flywheelSetpoint.get(), ControlType.kVelocity);
     yawController.setSetpoint(0.5, ControlType.kDutyCycle);
   }
 
   public void toggleFlywheel() {
     isSpinning = !isSpinning;
-    if (isSpinning) flywheelSpeed = flywheelRpm.getDouble(4000);
-    else flywheelSpeed = 0;
+    if (!isSpinning) flywheelSetpoint.set(0);
   }
 
   public double getRPM() {
