@@ -21,6 +21,10 @@ public class ElasticSubsystem extends SubsystemBase {
     SmartDashboard.putString(name, c.toHexString());
   }
 
+  public static void putColor(String name, String[] c) {
+    SmartDashboard.putStringArray(name, c);
+  }
+
   public static void putBoolean(String name, boolean b) {
     SmartDashboard.putBoolean(name, b);
   }

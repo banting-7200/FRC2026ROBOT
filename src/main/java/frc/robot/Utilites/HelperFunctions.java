@@ -4,7 +4,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.util.Color;
 
 public class HelperFunctions {
 
@@ -14,10 +13,6 @@ public class HelperFunctions {
 
   public static double map(double input, double inMin, double inMax, double outMin, double outMax) {
     return (input - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-  }
-
-  public static Color convertToGRB(Color rgbColor) {
-    return new Color(rgbColor.green, rgbColor.red, rgbColor.blue);
   }
 
   public static Transform2d translationToTransform(Translation2d translation) {

@@ -2,7 +2,7 @@ package frc.robot.Utilites;
 
 import edu.wpi.first.wpilibj.util.Color;
 
-public class LEDRequest {
+public class LEDRequest implements Comparable<LEDRequest> {
 
   public enum LEDState {
     BLINK,
@@ -18,6 +18,10 @@ public class LEDRequest {
 
   public LEDRequest(LEDState state) {
     this.state = state;
+  }
+
+  public int compareTo(LEDRequest other) {
+    return Integer.compare(this.getPriority(), other.getPriority());
   }
 
   public LEDRequest withBlinkRate(double rate) {
