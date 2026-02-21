@@ -70,7 +70,7 @@ public class TurretSubsystem extends SubsystemBase {
 
        flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
        flywheelConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-       flywheelConfig.closedLoop.pid(0.00003, 0, 0).feedForward.kV(0.00016); // 0.00016
+       flywheelConfig.closedLoop.pid(0.0000, 0, 0).feedForward.kV(0.00016); // 0.00016
        flyWheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     //    pitchConfig.inverted(false).idleMode(IdleMode.kBrake);
