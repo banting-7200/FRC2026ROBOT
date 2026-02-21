@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Utilites.GitInfo;
 
 public class Robot extends TimedRobot {
 
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    GitInfo.printGitInfo();
 
     m_robotContainer = new RobotContainer();
 
