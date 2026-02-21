@@ -6,31 +6,29 @@ import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 
 public class IntakeFuel extends Command {
 
-    IntakeSubsystem intake;
+  IntakeSubsystem intake;
 
-    public IntakeFuel(IntakeSubsystem intake) {
-        this.intake = intake;
-        addRequirements(intake);
-    }
+  public IntakeFuel(IntakeSubsystem intake) {
+    this.intake = intake;
+    addRequirements(intake);
+  }
 
-    @Override
-    public void initialize(){
-        
-    }
+  @Override
+  public void initialize() {}
 
-    @Override
-    public void execute() {
-        intake.setState(IntakeState.INTAKING_FUEL);
-        intake.run();
-    }
+  @Override
+  public void execute() {
+    intake.setState(IntakeState.INTAKING_FUEL);
+    intake.run();
+  }
 
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
 
-    @Override
-    public void end(boolean interrupted) {
-        intake.setState(IntakeState.NORMAL);
-    }
+  @Override
+  public void end(boolean interrupted) {
+    intake.setState(IntakeState.NORMAL);
+  }
 }

@@ -1,16 +1,12 @@
-
 package frc.robot.Utilites;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.util.Units;
 
 /**
- * The Constants class provides a convenient place to hold robot-wide
- * numerical or boolean constants. This
- * class should not be used for any other purpose. All constants should be
- * declared globally (i.e. public static). Do
- * not put anything functional in this class.
- *
+ * The Constants class provides a convenient place to hold robot-wide numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants should be declared
+ * globally (i.e. public static). Do not put anything functional in this class.
  */
 public final class Constants {
   // #region Generic
@@ -90,7 +86,6 @@ public final class Constants {
     public static final double CURRENT_LIMIT = 40;
 
     public static final double OUTPUT_RPM = 0;
-
   }
 
   // #endregion
@@ -134,7 +129,6 @@ public final class Constants {
 
     public static final double TURRET_FORWARD_OFFSET = 0.0; // meters
     public static final double TURRET_RIGHT_OFFSET = 0.0; // meters, negative for left offset
-
   }
   // #endregion
 }

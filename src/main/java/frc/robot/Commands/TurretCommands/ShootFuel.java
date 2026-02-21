@@ -23,7 +23,8 @@
 //     FieldLayout field = new FieldLayout();
 //     Pose2d robotPose;
 
-//     public ShootFuel(TurretSubsystem turret, FeederSubsystem feeder, HopperSubsystem hopper, Pose2d robotPose) {
+//     public ShootFuel(TurretSubsystem turret, FeederSubsystem feeder, HopperSubsystem hopper,
+// Pose2d robotPose) {
 //         this.turret = turret;
 //         this.feeder = feeder;
 //         this.hopper = hopper;
@@ -41,12 +42,14 @@
 //         Translation2d turretOffset = new Translation2d(TurretConstants.TURRET_FORWARD_OFFSET,
 //                 TurretConstants.TURRET_RIGHT_OFFSET);
 //         Transform2d robotToTurret = new Transform2d(turretOffset, new Rotation2d());
-//         Translation2d turretFieldPosition = robotPose.transformBy(robotToTurret).getTranslation();
+//         Translation2d turretFieldPosition =
+// robotPose.transformBy(robotToTurret).getTranslation();
 
 //         Translation2d targetPosition = new Translation2d();
 //         Optional<Alliance> alliance = DriverStation.getAlliance();
 //         if (alliance.isPresent()) {
-//             targetPosition = (alliance.get() == Alliance.Blue) ? field.getBlueHubPose().getTranslation()
+//             targetPosition = (alliance.get() == Alliance.Blue) ?
+// field.getBlueHubPose().getTranslation()
 //                     : field.getRedHubPose().getTranslation();
 //         } else {
 //             System.out.println("NO ALLIANCE | NO SHOOTING");

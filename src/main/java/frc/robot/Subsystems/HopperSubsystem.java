@@ -1,6 +1,5 @@
 // package frc.robot.Subsystems;
 
-
 // import com.revrobotics.spark.SparkLowLevel.MotorType;
 // import com.revrobotics.spark.SparkMax;
 // import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;

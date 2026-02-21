@@ -23,11 +23,11 @@ public class LimelightSubsystem extends SubsystemBase {
     return LimelightHelpers.getTargetCount(name);
   }
 
-  public double getTx(){
+  public double getTx() {
     return LimelightHelpers.getTX(name);
   }
-  public double getTy(){
+
+  public double getTy() {
     return LimelightHelpers.getTY(name);
   }
-  
 }

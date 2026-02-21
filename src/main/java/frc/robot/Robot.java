@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-
 public class Robot extends TimedRobot {
 
   private static Robot instance;
@@ -28,7 +27,6 @@ public class Robot extends TimedRobot {
     return instance;
   }
 
-  
   @Override
   public void robotInit() {
 
@@ -43,17 +41,15 @@ public class Robot extends TimedRobot {
     m_robotContainer.setupDashboard();
   }
 
-
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     m_robotContainer.robotPeriodic();
   }
 
-
   @Override
   public void disabledInit() {
-   // m_robotContainer.setMotorBrake(true);
+    // m_robotContainer.setMotorBrake(true);
     disabledTimer.reset();
     disabledTimer.start();
   }
@@ -61,13 +57,12 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     if (disabledTimer.hasElapsed(4)) {
-     // m_robotContainer.setMotorBrake(false);
+      // m_robotContainer.setMotorBrake(false);
       disabledTimer.stop();
       disabledTimer.reset();
     }
   }
 
- 
   @Override
   public void autonomousInit() {
     // m_robotContainer.setMotorBrake(true);
@@ -82,10 +77,8 @@ public class Robot extends TimedRobot {
     }
   }
 
-
   @Override
-  public void autonomousPeriodic() {
-  }
+  public void autonomousPeriodic() {}
 
   @Override
   public void teleopInit() {
@@ -95,7 +88,6 @@ public class Robot extends TimedRobot {
       CommandScheduler.getInstance().cancelAll();
     }
   }
-
 
   @Override
   public void teleopPeriodic() {
@@ -107,18 +99,12 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
   }
 
+  @Override
+  public void testPeriodic() {}
 
   @Override
-  public void testPeriodic() {
-  }
+  public void simulationInit() {}
 
-  
   @Override
-  public void simulationInit() {
-  }
-
- 
-  @Override
-  public void simulationPeriodic() {
-  }
+  public void simulationPeriodic() {}
 }
