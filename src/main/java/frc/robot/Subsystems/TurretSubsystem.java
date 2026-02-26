@@ -90,8 +90,9 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    System.out.println(flyWheelMotor.getEncoder().getVelocity());
-    flywheelController.setSetpoint(flywheelSpeed, ControlType.kVelocity);
+    // System.out.println(flyWheelMotor.getEncoder().getVelocity());
+    // flywheelController.setSetpoint(flywheelSpeed, ControlType.kVelocity);
+    yawController.setSetpoint(0.5, ControlType.kDutyCycle);
   }
 
   public void toggleFlywheel() {
