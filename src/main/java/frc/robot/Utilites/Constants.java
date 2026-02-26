@@ -1,6 +1,5 @@
 package frc.robot.Utilites;
 
-import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -58,7 +57,7 @@ public final class Constants {
       public static final double P = 0;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double CURRENT_LIMIT = 40;
+      public static final int CURRENT_LIMIT = 20;
       public static final boolean INVERSION = false;
     }
 
@@ -69,9 +68,9 @@ public final class Constants {
       public static final double CURRENT_LIMIT = 40;
     }
 
-    public static final double INTAKE_POSITION = 0;
-    public static final double STORED_POSITION = 0;
-    public static final double NORMAL_POSITION = 0;
+    public static final double INTAKE_POSITION = 57;
+    public static final double STORED_POSITION = 200;
+    public static final double NORMAL_POSITION = 100;
 
     public static final double INTAKE_RPM = 0;
   }
@@ -96,7 +95,6 @@ public final class Constants {
       public static final double I = 0;
       public static final double D = 0;
       public static final double CURRENT_LIMIT = 40;
-      public static final InvertedValue INVERSION = InvertedValue.CounterClockwise_Positive;
       public static final double GEAR_RATIO = 10;
     }
 
@@ -105,7 +103,6 @@ public final class Constants {
       public static final double I = 0;
       public static final double D = 0;
       public static final double CURRENT_LIMIT = 40;
-      public static final InvertedValue INVERSION = InvertedValue.Clockwise_Positive;
     }
 
     public static final class Hood {

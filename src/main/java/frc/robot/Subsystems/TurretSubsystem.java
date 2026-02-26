@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants;
+import frc.robot.Utilites.Constants.TurretConstants;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -46,18 +47,18 @@ public class TurretSubsystem extends SubsystemBase {
   private GenericEntry flywheelD = debugTab.addPersistent("Flywheel D", 0).getEntry();
   private GenericEntry flywheelKV = debugTab.addPersistent("Flywheel kv", 0).getEntry();
 
-  public TurretSubsystem() { // Yaw CCW+
+  public TurretSubsystem() { // Yaw
     flyWheelMotor = new SparkFlex(Constants.CANIds.TURRET_FLYWHEEL_ID, MotorType.kBrushless);
     //    pitchMotor = new SparkMax(Constants.CANIds.TURRET_HOOD_ID, MotorType.kBrushless);
-    //    yawMotor = new SparkMax(Constants.CANIds.TURRET_YAW_ID, MotorType.kBrushless);
+    yawMotor = new SparkMax(Constants.CANIds.TURRET_YAW_ID, MotorType.kBrushless);
 
     flywheelController = flyWheelMotor.getClosedLoopController();
     //    pitchController = pitchMotor.getClosedLoopController();
-    //    yawController = yawMotor.getClosedLoopController();
+    yawController = yawMotor.getClosedLoopController();
 
     flywheelConfig = new SparkFlexConfig();
     //    pitchConfig = new SparkMaxConfig();
-    //    yawConfig = new SparkMaxConfig();
+    yawConfig = new SparkMaxConfig();
 
     flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
     flywheelConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
@@ -72,14 +73,12 @@ public class TurretSubsystem extends SubsystemBase {
     //    pitchMotor.configure(pitchConfig, ResetMode.kResetSafeParameters,
     // PersistMode.kPersistParameters);
 
-    //    yawConfig.inverted(false).idleMode(IdleMode.kCoast);
-    //    yawConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    //    yawConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
-    //    yawConfig.absoluteEncoder.inverted(false);
-    //    yawConfig.closedLoop.pid(TurretConstants.Yaw.P, TurretConstants.Yaw.I,
-    // TurretConstants.Yaw.D);
-    //    yawMotor.configure(yawConfig, ResetMode.kResetSafeParameters,
-    // PersistMode.kPersistParameters);
+    yawConfig.inverted(false).idleMode(IdleMode.kCoast);
+    yawConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+    yawConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(6);
+    yawConfig.absoluteEncoder.inverted(false);
+    yawConfig.closedLoop.pid(TurretConstants.Yaw.P, TurretConstants.Yaw.I, TurretConstants.Yaw.D);
+    yawMotor.configure(yawConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void setAngle(double degrees) {

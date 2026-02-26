@@ -51,7 +51,9 @@ public class IntakeSubsystem extends SubsystemBase {
     idleMode = IdleMode.kBrake;
 
     pivotConfig.inverted(IntakeConstants.Pivot.INVERSION).idleMode(idleMode);
+    pivotConfig.smartCurrentLimit(IntakeConstants.Pivot.CURRENT_LIMIT);
     pivotConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+    pivotConfig.absoluteEncoder.inverted(true).zeroOffset(0.7);
     pivotConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
     pivotConfig.closedLoop.pid(
         IntakeConstants.Pivot.P, IntakeConstants.Pivot.I, IntakeConstants.Pivot.D);
@@ -76,21 +78,17 @@ public class IntakeSubsystem extends SubsystemBase {
       case INTAKING_FUEL:
         isAgitating = false;
         setpoint = IntakeConstants.INTAKE_POSITION;
-        intakeMotor.set(1);
         break;
       case AGITATING_FUEL:
         isAgitating = true;
-        intakeMotor.set(0);
         break;
       case STORED:
         isAgitating = false;
         setpoint = IntakeConstants.STORED_POSITION;
-        intakeMotor.set(0);
         break;
       case NORMAL:
         isAgitating = false;
         setpoint = IntakeConstants.NORMAL_POSITION;
-        intakeMotor.set(0);
         break;
     }
   }
@@ -102,18 +100,13 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    if (isAgitating) {
-      // TODO make setpoint move between stored and normal
-    }
-
+    pivotController.setSetpoint(setpoint, ControlType.kPosition);
     intakeController.setSetpoint(intakeVel, ControlType.kVelocity);
-    // System.out.println(intakeMotor.getEncoder().getVelocity());
-
   }
 
   public void spinUp() {
     isSpinning = !isSpinning;
-    if (isSpinning) intakeVel = 2000;
+    if (isSpinning) intakeVel = 2500;
     else intakeVel = 0;
   }
 }

@@ -4,25 +4,29 @@
 
 package frc.robot;
 
-// Library imports
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystems.ElasticSubsystem;
-import frc.robot.Subsystems.FeederSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
-import frc.robot.Subsystems.TurretSubsystem;
-// import frc.robot.Subsystems.TurretSubsystem;
+import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Utilites.Constants;
+import frc.robot.Utilites.Constants.OperatorConstants;
 import frc.robot.Utilites.Constants.PWMPorts;
 import frc.robot.Utilites.FieldLayout;
 import frc.robot.Utilites.LEDRequest;
 import frc.robot.Utilites.LEDRequest.LEDState;
+import java.io.File;
+import swervelib.SwerveInputStream;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -35,9 +39,11 @@ public class RobotContainer {
   // Object initalizations
   final CommandXboxController driverXbox =
       new CommandXboxController(0); // Controller, to USB port 0
-  // private final SwerveSubsystem drivebase = new SwerveSubsystem(new
-  // File(Filesystem.getDeployDirectory(),
-  //         "swerve/neo")); // The swerve base, with the variable from the json files
+  private final SwerveSubsystem drivebase =
+      new SwerveSubsystem(
+          new File(
+              Filesystem.getDeployDirectory(),
+              "swerve/neo")); // The swerve base, with the variable from the json files
   LightsSubsystem lights =
       new LightsSubsystem(
           PWMPorts.LIGHT_PORT,
@@ -49,9 +55,11 @@ public class RobotContainer {
           ModuleType.kRev); // The Rev PowerDistribution board, with its CAN ID
   FieldLayout field = new FieldLayout(); // The layout of all the april tags
   // TurretSubsystem turret = new TurretSubsystem(); // The turret
-  // IntakeSubsystem intake;
-  FeederSubsystem feeder;
-  TurretSubsystem turret;
+  IntakeSubsystem intake;
+
+  //   HopperSubsystem hopper;
+  //   FeederSubsystem feeder;
+  //   TurretSubsystem turret;
 
   // The 3 PID Controllers needed for the accurate aligning to an april tag
   private PIDController forwardPID = new PIDController(3, 0, 0.001);
@@ -67,38 +75,39 @@ public class RobotContainer {
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
    * velocity.
    */
-  // SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-  //         () -> driverXbox.getLeftY() * 1,
-  //         () -> driverXbox.getLeftX() * 1)
-  //         .withControllerRotationAxis(driverXbox::getRightX)
-  //         .deadband(OperatorConstants.DEADBAND)
-  //         .scaleTranslation(0.8)
-  //         .allianceRelativeControl(true);
+  SwerveInputStream driveAngularVelocity =
+      SwerveInputStream.of(
+              drivebase.getSwerveDrive(),
+              () -> driverXbox.getLeftY() * 1,
+              () -> driverXbox.getLeftX() * 1)
+          .withControllerRotationAxis(driverXbox::getRightX)
+          .deadband(OperatorConstants.DEADBAND)
+          .scaleTranslation(0.8)
+          .allianceRelativeControl(true);
 
-  // /**
-  //  * Clone's the angular velocity input stream and converts it to a fieldRelative
-  //  * input stream.
-  //  */
-  // SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(()
-  // -> driverXbox.getRightX() * -1, () ->
-  //         driverXbox.getRightY()*-1)
-  //         .headingWhile(true);
+  /** Clone's the angular velocity input stream and converts it to a fieldRelative input stream. */
+  SwerveInputStream driveDirectAngle =
+      driveAngularVelocity
+          .copy()
+          .withControllerHeadingAxis(
+              () -> driverXbox.getRightX() * -1, () -> driverXbox.getRightY() * -1)
+          .headingWhile(true);
 
   // /**
   //  * Clone's the angular velocity input stream and converts it to a robotRelative
   //  * input stream.
   //  */
-  // SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
-  //         .allianceRelativeControl(false);
+  SwerveInputStream driveRobotOriented =
+      driveAngularVelocity.copy().robotRelative(true).allianceRelativeControl(false);
 
   // #endregion
 
   // Constructor of the main class
   public RobotContainer() {
 
-    // intake = new IntakeSubsystem();
-    feeder = new FeederSubsystem();
-    turret = new TurretSubsystem();
+    intake = new IntakeSubsystem();
+    // feeder = new FeederSubsystem();
+    // turret = new TurretSubsystem();
     // Changes the target pose to in front of blue hub
     targetPose = field.getPoseInFrontOfTag(26, 1.5);
     // Setup the drive dashboard
@@ -113,43 +122,50 @@ public class RobotContainer {
 
   private void configureBindings() {
     // Main drive Command
-    // Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
+    Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
     // @SuppressWarnings("unused")
     // // "Better" drive command that still needs to be tested, requires roborio 2.0
     // Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(
     //         driveDirectAngle);
 
     //  // This line activates the drivebase
-    // drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+    drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
 
     // // #region Ctrl Bindings
     // // Creep drive
-    // driverXbox.rightTrigger(0.2).whileTrue(new StartEndCommand(() -> {
-    //     drivebase.setCreepDrive(true);
-    // }, () -> {
-    //     drivebase.setCreepDrive(false);
-    // }));
-
     driverXbox
-        .b()
-        .onTrue(
-            Commands.runOnce(
+        .rightTrigger(0.2)
+        .whileTrue(
+            new StartEndCommand(
                 () -> {
-                  turret.toggleFlywheel();
-                  feeder.toggleState();
+                  drivebase.setCreepDrive(true);
+                },
+                () -> {
+                  drivebase.setCreepDrive(false);
                 }));
+
+    // driverXbox
+    //     .b()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () -> {
+    //               turret.toggleFlywheel();
+    //               feeder.toggleState();
+    //             }));
     // driverXbox.b().onTrue(new DriveToPose(drivebase, () -> targetPose, forwardPID, strafePID,
     // thetaPID,
     //         this::driverOverride, lights));
-    // driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.y().onTrue(Commands.runOnce(intake::togglePosition));
+    driverXbox.b().onTrue(Commands.runOnce(intake::spinUp));
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // #endregion
 
   }
 
   public void enabledPeriodic() {
-    //  intake.run();
-    turret.run();
-    feeder.run();
+    intake.run();
+    // turret.run();
+    // feeder.run();
   }
 
   public void robotPeriodic() {
@@ -168,7 +184,7 @@ public class RobotContainer {
     //    // ElasticSubsystem.putString("Robot Pose", drivebase.getPose().toString());
     //     ElasticSubsystem.putNumber("Total Current Pull", PDH.getTotalCurrent());
     // ElasticSubsystem.putBoolean("Is Creep Drive", drivebase.getCreepDrive());
-    ElasticSubsystem.putNumber("Flywheel rpm", turret.getRPM());
+    // ElasticSubsystem.putNumber("Flywheel rpm", turret.getRPM());
   }
 
   public void setupDashboard() {
