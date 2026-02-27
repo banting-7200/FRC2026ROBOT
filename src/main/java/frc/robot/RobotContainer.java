@@ -9,9 +9,11 @@ import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.AddressableLED.ColorOrder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
@@ -41,7 +43,8 @@ public class RobotContainer {
   LightsSubsystem lights =
       new LightsSubsystem(
           PWMPorts.LIGHT_PORT,
-          Constants.LIGHTS_AMOUNT); // Lights with the pwm port and amount of lights
+          Constants.LIGHTS_AMOUNT,
+          ColorOrder.kGRB); // Lights with the pwm port, amount of lights and color order
   ElasticSubsystem elasticSubsystem = new ElasticSubsystem(); // The Driver dashboard
   PowerDistribution PDH =
       new PowerDistribution(
@@ -177,8 +180,7 @@ public class RobotContainer {
 
   public void sendDashboardData() {
     //     ElasticSubsystem.putBoolean("Rejecting Telemetry Updates", doRejectUpdate);
-    //     ElasticSubsystem.putColor("Lights",
-    // HelperFunctions.convertToGRB(lights.getLEDRequest().getColour()));
+    //     ElasticSubsystem.putColor("Lights", lights.getHexColour());
     //     ElasticSubsystem.putString("Target Pose", targetPose.toString());
     //    // ElasticSubsystem.putString("Robot Pose", drivebase.getPose().toString());
     //     ElasticSubsystem.putNumber("Total Current Pull", PDH.getTotalCurrent());
@@ -248,23 +250,33 @@ public class RobotContainer {
   // #endregion
   // #region Generic
 
+  // #region Lights
   // Set the lights to different patterns
   public void setLights() {
-    // if (drivebase.getCreepDrive())
-    //     lights.requestLEDState(new
-    // LEDRequest(LEDState.SOLID).withColour(HelperFunctions.convertToGRB(Color.kRed))
-    //             .withPriority(4).withBlinkRate(0.7));
-    // else
-    //     lights.requestLEDState(new
-    // LEDRequest(LEDState.SOLID).withColour(HelperFunctions.convertToGRB(Color.kGreen))
-    //             .withPriority(5));
 
-    if (!ElasticSubsystem.getBoolean("Lights Switch"))
+    if (!ElasticSubsystem.getBoolean("Lights Switch")) {
       lights.requestLEDState(new LEDRequest(LEDState.OFF).withPriority(-999));
+      return;
+    }
 
-    if (DriverStation.isDisabled())
+    if (DriverStation.isDisabled()) {
       lights.requestLEDState(new LEDRequest(LEDState.RAINBOW).withPriority(-1));
+      return;
+    }
+
+    /*
+    if (drivebase.getCreepDrive()) {
+      lights.requestLEDState(
+          new LEDRequest(LEDState.SOLID).withColour(Color.kRed).withPriority(4).withBlinkRate(0.7));
+      return;
+    }
+    */
+
+    // If nothing else matches set lights to green
+    lights.requestLEDState(new LEDRequest(LEDState.SOLID).withColour(Color.kGreen).withPriority(5));
   }
+
+  // #endregion
 
   // Run the auto that was selected in the driver dashboard
   // public Command getAutonomousCommand() {
