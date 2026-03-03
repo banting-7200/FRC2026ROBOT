@@ -91,9 +91,9 @@ public final class Constants {
   // #region Turret
   public static final class TurretConstants {
     public static final class Yaw {
-      public static final double P = 0;
+      public static final double P = 0.022;
       public static final double I = 0;
-      public static final double D = 0;
+      public static final double D = 0.012;
       public static final double CURRENT_LIMIT = 40;
       public static final double GEAR_RATIO = 10;
     }

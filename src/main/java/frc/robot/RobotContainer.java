@@ -6,21 +6,29 @@ package frc.robot;
 
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.TurretCommands.ShootFuel;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
+import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants;
+import frc.robot.Utilites.Constants.OperatorConstants;
 import frc.robot.Utilites.Constants.PWMPorts;
 import frc.robot.Utilites.FieldLayout;
 import frc.robot.Utilites.LEDRequest;
 import frc.robot.Utilites.LEDRequest.LEDState;
+import frc.robot.Utilites.LimelightHelpers;
+import java.io.File;
+import swervelib.SwerveInputStream;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -33,11 +41,11 @@ public class RobotContainer {
   // Object initalizations
   final CommandXboxController driverXbox =
       new CommandXboxController(0); // Controller, to USB port 0
-  //   private final SwerveSubsystem drivebase =
-  //       new SwerveSubsystem(
-  //           new File(
-  //               Filesystem.getDeployDirectory(),
-  //               "swerve/neo")); // The swerve base, with the variable from the json files
+  private final SwerveSubsystem drivebase =
+      new SwerveSubsystem(
+          new File(
+              Filesystem.getDeployDirectory(),
+              "swerve/neo")); // The swerve base, with the variable from the json files
   LightsSubsystem lights =
       new LightsSubsystem(
           PWMPorts.LIGHT_PORT,
@@ -48,7 +56,6 @@ public class RobotContainer {
           Constants.CANIds.PDH_ID,
           ModuleType.kRev); // The Rev PowerDistribution board, with its CAN ID
   FieldLayout field = new FieldLayout(); // The layout of all the april tags
-  // TurretSubsystem turret = new TurretSubsystem(); // The turret
   // IntakeSubsystem intake;
 
   //   HopperSubsystem hopper;
@@ -60,8 +67,7 @@ public class RobotContainer {
   private PIDController strafePID = new PIDController(3, 0, 0.001);
   private PIDController thetaPID = new PIDController(0.05, 0, 0.001);
   // The target pose the robot will drive to, with a random position
-  Pose2d targetPose = new Pose2d(2, 5, new Rotation2d(0));
-
+  Pose2d targetPose = new Pose2d(14, 4, new Rotation2d(3.14));
   boolean doRejectUpdate;
 
   // #region Swerve Setup
@@ -69,31 +75,31 @@ public class RobotContainer {
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
    * velocity.
    */
-  //   SwerveInputStream driveAngularVelocity =
-  //       SwerveInputStream.of(
-  //               drivebase.getSwerveDrive(),
-  //               () -> driverXbox.getLeftY() * 1,
-  //               () -> driverXbox.getLeftX() * 1)
-  //           .withControllerRotationAxis(driverXbox::getRightX)
-  //           .deadband(OperatorConstants.DEADBAND)
-  //           .scaleTranslation(0.8)
-  //           .allianceRelativeControl(true);
+  SwerveInputStream driveAngularVelocity =
+      SwerveInputStream.of(
+              drivebase.getSwerveDrive(),
+              () -> driverXbox.getLeftY() * 1,
+              () -> driverXbox.getLeftX() * 1)
+          .withControllerRotationAxis(driverXbox::getRightX)
+          .deadband(OperatorConstants.DEADBAND)
+          .scaleTranslation(0.8)
+          .allianceRelativeControl(true);
 
   //   /** Clone's the angular velocity input stream and converts it to a fieldRelative input
   // stream. */
-  //   SwerveInputStream driveDirectAngle =
-  //       driveAngularVelocity
-  //           .copy()
-  //           .withControllerHeadingAxis(
-  //               () -> driverXbox.getRightX() * -1, () -> driverXbox.getRightY() * -1)
-  //           .headingWhile(true);
+  SwerveInputStream driveDirectAngle =
+      driveAngularVelocity
+          .copy()
+          .withControllerHeadingAxis(
+              () -> driverXbox.getRightX() * -1, () -> driverXbox.getRightY() * -1)
+          .headingWhile(true);
 
   //   // /**
   //   //  * Clone's the angular velocity input stream and converts it to a robotRelative
   //   //  * input stream.
   //   //  */
-  //   SwerveInputStream driveRobotOriented =
-  //       driveAngularVelocity.copy().robotRelative(true).allianceRelativeControl(false);
+  SwerveInputStream driveRobotOriented =
+      driveAngularVelocity.copy().robotRelative(true).allianceRelativeControl(false);
 
   // #endregion
 
@@ -159,6 +165,9 @@ public class RobotContainer {
     // driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // #endregion
 
+    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
+
+    driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
@@ -171,6 +180,7 @@ public class RobotContainer {
     // setLights(); // Set the light pattern
     // lights.run(); // Turn the lights on
     sendDashboardData(); // Send dashboard data
+    updateTelemetry();
   }
 
   // #region Dashboard
@@ -192,6 +202,31 @@ public class RobotContainer {
 
   // #endregion
   // #region Telemetry
+
+  public void updateTelemetry() {
+    try {
+      doRejectUpdate = false;
+      //   LimelightHelpers.PoseEstimate robotPosition =
+      //       LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+
+      Pose2d robotPosition = LimelightHelpers.getBotPose2d_wpiBlue("limelight-turret");
+      if (LimelightHelpers.getTargetCount("limelight-turret") < 1) {
+        doRejectUpdate = true;
+      }
+
+      if (!doRejectUpdate) {
+        drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
+
+        drivebase.updateBotPose(robotPosition);
+      } else {
+        System.out.println("REJECTING TELEMETRY");
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
+    }
+  }
 
   // public void updateTelemetry() {
   //     // try-catch in case the limelight disconnects for a millisecond
