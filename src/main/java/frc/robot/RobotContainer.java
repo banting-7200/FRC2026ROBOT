@@ -14,6 +14,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.TurretCommands.ShootFuel;
 import frc.robot.Subsystems.ElasticSubsystem;
@@ -127,27 +130,27 @@ public class RobotContainer {
 
   private void configureBindings() {
     // Main drive Command
-    // Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
+    Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
     // @SuppressWarnings("unused")
     // // "Better" drive command that still needs to be tested, requires roborio 2.0
     // Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(
     //         driveDirectAngle);
 
     //  // This line activates the drivebase
-    // drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+    drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
 
     // // // #region Ctrl Bindings
     // // // Creep drive
-    // driverXbox
-    //     .rightTrigger(0.2)
-    //     .whileTrue(
-    //         new StartEndCommand(
-    //             () -> {
-    //               drivebase.setCreepDrive(true);
-    //             },
-    //             () -> {
-    //               drivebase.setCreepDrive(false);
-    //             }));
+    driverXbox
+        .rightTrigger(0.2)
+        .whileTrue(
+            new StartEndCommand(
+                () -> {
+                  drivebase.setCreepDrive(true);
+                },
+                () -> {
+                  drivebase.setCreepDrive(false);
+                }));
 
     // driverXbox
     //     .b()
@@ -162,12 +165,12 @@ public class RobotContainer {
     //         this::driverOverride, lights));
     // driverXbox.y().onTrue(Commands.runOnce(intake::togglePosition));
     // driverXbox.b().onTrue(Commands.runOnce(intake::spinUp));
-    // driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // #endregion
 
-    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
+    turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
 
-    driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
+    // driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
@@ -206,20 +209,31 @@ public class RobotContainer {
   public void updateTelemetry() {
     try {
       doRejectUpdate = false;
-      //   LimelightHelpers.PoseEstimate robotPosition =
-      //       LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+      LimelightHelpers.SetRobotOrientation(
+          "limelight-turret",
+          drivebase.getHeading().getDegrees(),
+          Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
+          drivebase.getPitch().getDegrees(),
+          0,
+          0,
+          0);
 
-      Pose2d robotPosition = LimelightHelpers.getBotPose2d_wpiBlue("limelight-turret");
-      if (LimelightHelpers.getTargetCount("limelight-turret") < 1) {
+      LimelightHelpers.PoseEstimate robotPosition =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-turret");
+
+      if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(120)) {
+
+        doRejectUpdate = true;
+      }
+      if (robotPosition.tagCount < 1) {
         doRejectUpdate = true;
       }
 
       if (!doRejectUpdate) {
-        drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
-
-        drivebase.updateBotPose(robotPosition);
+        drivebase.setVisionStdDevs(VecBuilder.fill(0.5, 0.5, 9999)); // 1.5
+        drivebase.updateBotPose(robotPosition.pose);
       } else {
-        System.out.println("REJECTING TELEMETRY");
+        // System.out.println("Rejecting Telemetry");
       }
 
     } catch (Exception e) {
@@ -228,58 +242,84 @@ public class RobotContainer {
     }
   }
 
-  // public void updateTelemetry() {
-  //     // try-catch in case the limelight disconnects for a millisecond
+  //   public void updateTelemetry() {
   //     try {
-  //         doRejectUpdate = false;
-  //         // Send the ll4 IMU data from the pigeon
-  //         LimelightHelpers.SetRobotOrientation(
-  //                 "limelight-back",
-  //                 drivebase.getHeading().getDegrees(),
-  //                 Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-  //                 drivebase.getPitch().getDegrees(), 0, 0, 0);
-  //         // Send the other ll4 IMU data from the pigeon
-  //         LimelightHelpers.SetRobotOrientation(
-  //                 "limelight-front",
-  //                 drivebase.getHeading().getDegrees(),
-  //                 Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-  //                 drivebase.getPitch().getDegrees(), 0, 0, 0);
-  //         // Get the estimated position from the back camera
-  //         LimelightHelpers.PoseEstimate robotPositionBack = LimelightHelpers
-  //                 .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-back");
-  //         // Get the esitamted position form the front camera
-  //         LimelightHelpers.PoseEstimate robotPositionFront = LimelightHelpers
-  //                 .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
+  //       doRejectUpdate = false;
+  //       //   LimelightHelpers.PoseEstimate robotPosition =
+  //       //       LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
 
-  //         // reject vision while spinning too fast
-  //         if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(120))
-  // {
-  //             doRejectUpdate = true;
-  //         }
-  //         // reject vision while a tag is not seen
-  //         if (robotPositionBack.tagCount < 1 && robotPositionFront.tagCount < 1) {
-  //             doRejectUpdate = true;
-  //         }
+  //       Pose2d robotPosition = LimelightHelpers.getBotPose2d_wpiBlue("limelight-turret");
+  //       if (LimelightHelpers.getTargetCount("limelight-turret") < 1) {
+  //         doRejectUpdate = true;
+  //       }
 
-  //         if (!doRejectUpdate) {
-  //             // set the "trust", in cameras
-  //             drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
-  //             if (robotPositionBack.tagCount > 0) {
-  //                 // Send the pose to the drivebase
-  //                 drivebase.updateBotPose(robotPositionBack.pose);
-  //             }
-  //             if (robotPositionFront.tagCount > 0) {
-  //                 // Send the pose to the drivebase
-  //                 drivebase.updateBotPose(robotPositionFront.pose);
-  //             }
+  //       if (!doRejectUpdate) {
+  //         drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
 
-  //         }
+  //         drivebase.updateBotPose(robotPosition);
+  //       } else {
+  //         System.out.println("REJECTING TELEMETRY");
+  //       }
 
   //     } catch (Exception e) {
-  //         e.printStackTrace();
-  //         System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
+  //       e.printStackTrace();
+  //       System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
   //     }
-  // }
+  //   }
+
+  //   public void updateTelemetry() {
+  //       // try-catch in case the limelight disconnects for a millisecond
+  //       try {
+  //           doRejectUpdate = false;
+  //           // Send the ll4 IMU data from the pigeon
+  //           LimelightHelpers.SetRobotOrientation(
+  //                   "limelight-back",
+  //                   drivebase.getHeading().getDegrees(),
+  //                   Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
+  //                   drivebase.getPitch().getDegrees(), 0, 0, 0);
+  //           // Send the other ll4 IMU data from the pigeon
+  //           LimelightHelpers.SetRobotOrientation(
+  //                   "limelight-front",
+  //                   drivebase.getHeading().getDegrees(),
+  //                   Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
+  //                   drivebase.getPitch().getDegrees(), 0, 0, 0);
+  //           // Get the estimated position from the back camera
+  //           LimelightHelpers.PoseEstimate robotPositionBack = LimelightHelpers
+  //                   .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-back");
+  //           // Get the esitamted position form the front camera
+  //           LimelightHelpers.PoseEstimate robotPositionFront = LimelightHelpers
+  //                   .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
+
+  //           // reject vision while spinning too fast
+  //           if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) >
+  // Math.toRadians(120))
+  //   {
+  //               doRejectUpdate = true;
+  //           }
+  //           // reject vision while a tag is not seen
+  //           if (robotPositionBack.tagCount < 1 && robotPositionFront.tagCount < 1) {
+  //               doRejectUpdate = true;
+  //           }
+
+  //           if (!doRejectUpdate) {
+  //               // set the "trust", in cameras
+  //               drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
+  //               if (robotPositionBack.tagCount > 0) {
+  //                   // Send the pose to the drivebase
+  //                   drivebase.updateBotPose(robotPositionBack.pose);
+  //               }
+  //               if (robotPositionFront.tagCount > 0) {
+  //                   // Send the pose to the drivebase
+  //                   drivebase.updateBotPose(robotPositionFront.pose);
+  //               }
+
+  //           }
+
+  //       } catch (Exception e) {
+  //           e.printStackTrace();
+  //           System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
+  //       }
+  //   }
   // #endregion
   // #region Generic
 

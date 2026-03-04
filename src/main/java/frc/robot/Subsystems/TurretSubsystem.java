@@ -87,7 +87,7 @@ public class TurretSubsystem extends SubsystemBase {
   public void run() {
     yawController.setSetpoint(turretAngle.get(), ControlType.kPosition);
     // yawMotor.set(0);
-    System.out.println("Current: " + getTurretAngle() + " Wanted: " + turretAngle.get());
+    // System.out.println("Current: " + getTurretAngle() + " Wanted: " + turretAngle.get());
   }
 
   public double getTurretAngle() {

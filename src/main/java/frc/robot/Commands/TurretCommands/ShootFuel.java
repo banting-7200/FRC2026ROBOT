@@ -4,12 +4,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants.TurretConstants;
 import frc.robot.Utilites.FieldLayout;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ShootFuel extends Command {
@@ -43,19 +46,19 @@ public class ShootFuel extends Command {
     Transform2d robotToTurret = new Transform2d(turretOffset, new Rotation2d());
     Translation2d turretFieldPosition = pose.transformBy(robotToTurret).getTranslation();
 
-    // Translation2d targetPosition = new Translation2d();
-    Translation2d targetPosition = field.getTagPose(10).getTranslation();
-    // Optional<Alliance> alliance = DriverStation.getAlliance();
-    // if (alliance.isPresent()) {
-    //   targetPosition =
-    //       (alliance.get() == Alliance.Blue)
-    //           ? field.getBlueHubPose().getTranslation()
-    //           : field.getRedHubPose().getTranslation();
-    // } else {
-    //   System.out.println("NO ALLIANCE | NO SHOOTING");
-    // }
+    Translation2d targetPosition = new Translation2d();
+    // Translation2d targetPosition = field.getTagPose(10).getTranslation();
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      targetPosition =
+          (alliance.get() == Alliance.Blue)
+              ? field.getBlueHubPose().getTranslation()
+              : field.getRedHubPose().getTranslation();
+    } else {
+      System.out.println("NO ALLIANCE | NO SHOOTING");
+    }
 
-    Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+?
+    Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+
     Rotation2d turretFieldAngle = turretToTargetVector.getAngle(); // Angle to HUB
     Rotation2d robotRelativeTurretAngle = turretFieldAngle.minus(pose.getRotation());
 
@@ -68,8 +71,9 @@ public class ShootFuel extends Command {
 
   @Override
   public boolean isFinished() {
-    return turret.getTurretAngle() >= desiredAngle - tolerance
-        && turret.getTurretAngle() <= desiredAngle + tolerance;
+    // return turret.getTurretAngle() >= desiredAngle - tolerance
+    //     && turret.getTurretAngle() <= desiredAngle + tolerance;
+    return false;
   }
 
   @Override
