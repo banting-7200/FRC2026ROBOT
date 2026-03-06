@@ -36,6 +36,10 @@ public final class Constants {
   public static final class DIOPorts {
     public static final int TALONFX_CW_LIMIT_SWITCH = 1;
     public static final int TALONFX_CCW_LIMIT_SWITCH = 0;
+    // TODO: Set DIO port for top climber limit switch
+    public static final int TOP_CLIMBER_LIMIT_SWITCH = 0;
+    // TODO: Set DIO port for bottom climber limit switch
+    public static final int BOTTOM_CLIMBER_LIMIT_SWITCH = 0;
   }
 
   public static final class CANIds {
@@ -48,6 +52,7 @@ public final class Constants {
     public static final int TURRET_FLYWHEEL_ID = 8;
     public static final int TURRET_HOOD_ID = 9;
     public static final int PDH_ID = 20;
+    public static final int CLIMB_ID = 0; // TODO: Set climber motor CANid
   }
 
   // #endregion
