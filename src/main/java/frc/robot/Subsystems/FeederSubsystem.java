@@ -10,15 +10,34 @@ import frc.robot.Utilites.Constants.IntakeConstants;
 
 public class FeederSubsystem extends SubsystemBase {
 
-  SparkFlex motor;
+  SparkFlex motor1;
+  SparkFlex motor2;
+  SparkFlex motor3;
+
   SparkFlexConfig config;
   boolean isOn = false;
 
   public FeederSubsystem() {
-    motor = new SparkFlex(CANIds.FEEDER_ID, MotorType.kBrushless);
+    motor1 = new SparkFlex(CANIds.FEEDER_ID, MotorType.kBrushless);
     config = new SparkFlexConfig();
     config.inverted(IntakeConstants.Pivot.INVERSION).idleMode(IdleMode.kCoast);
-    motor.configure(
+    motor1.configure(
+        config,
+        com.revrobotics.ResetMode.kResetSafeParameters,
+        com.revrobotics.PersistMode.kPersistParameters);
+
+    motor2 = new SparkFlex(CANIds.FEEDER_ID, MotorType.kBrushless);
+    config = new SparkFlexConfig();
+    config.inverted(IntakeConstants.Pivot.INVERSION).idleMode(IdleMode.kCoast);
+    motor2.configure(
+        config,
+        com.revrobotics.ResetMode.kResetSafeParameters,
+        com.revrobotics.PersistMode.kPersistParameters);
+
+    motor3 = new SparkFlex(CANIds.FEEDER_ID, MotorType.kBrushless);
+    config = new SparkFlexConfig();
+    config.inverted(IntakeConstants.Pivot.INVERSION).idleMode(IdleMode.kCoast);
+    motor3.configure(
         config,
         com.revrobotics.ResetMode.kResetSafeParameters,
         com.revrobotics.PersistMode.kPersistParameters);
@@ -37,6 +56,8 @@ public class FeederSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    if (isOn) motor.set(0.3);
+    if (isOn) motor1.set(0.3);
+    if (isOn) motor2.set(0.3);
+    if (isOn) motor3.set(0.3);
   }
 }

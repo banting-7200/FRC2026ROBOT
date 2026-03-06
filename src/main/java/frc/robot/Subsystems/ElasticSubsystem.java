@@ -10,7 +10,7 @@ public class ElasticSubsystem extends SubsystemBase {
   SendableChooser<String> autoChooser = new SendableChooser<>();
 
   public static void putNumber(String name, double number) {
-    SmartDashboard.putNumber(name, number);
+    SmartDashboard.putNumber(name, number);// jnjn
   }
 
   public static double getNumber(String name) {
