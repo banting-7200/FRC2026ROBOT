@@ -29,5 +29,7 @@ ClimberSubsystem climber;
 
   // Do something when command is finished
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    climber.end();
+  }
 }

@@ -16,6 +16,13 @@ public class ClimberSubsystem extends SubsystemBase {
         DOWN
     }
 
+    enum ActivatedLimitSwitches
+    {
+        TOP, // Top Limit Switch
+        BOTTOM,// Bottom Limit Switch
+        NONE // neither
+    }
+
     SparkFlex motor;
     ClimbMode mode = ClimbMode.DISABLED;
     double motorSpeed = 0; 
@@ -50,25 +57,29 @@ public class ClimberSubsystem extends SubsystemBase {
         }
     }
 
-    private boolean limitsReached() {
+    private ActivatedLimitSwitches limitsReached() {
         if (topClimberLimit.get())
-            return true;
+            return ActivatedLimitSwitches.TOP;
+
         if (bottomClimberLimit.get())
-            return true;
-        return false;
+            return ActivatedLimitSwitches.BOTTOM;
+
+        return ActivatedLimitSwitches.NONE;
     }
 
     private void moveUp() {
-        if (limitsReached()){
+        if (limitsReached() == ActivatedLimitSwitches.TOP){
             mode = ClimbMode.DISABLED;
+             motor.set(0);
             return;
         }
         motor.set(motorSpeed);
     }
 
     private void moveDown() {
-        if (limitsReached()) {
+        if (limitsReached() == ActivatedLimitSwitches.BOTTOM) {
             mode = ClimbMode.DISABLED;
+             motor.set(0);
             return;
         }
         motor.set(-motorSpeed);
