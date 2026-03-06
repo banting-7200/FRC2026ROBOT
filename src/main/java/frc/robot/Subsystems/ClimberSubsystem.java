@@ -18,6 +18,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     SparkFlex motor;
     ClimbMode mode = ClimbMode.DISABLED;
+    double motorSpeed = 0; 
     DigitalInput topClimberLimit;
     DigitalInput bottomClimberLimit;
 
@@ -27,12 +28,14 @@ public class ClimberSubsystem extends SubsystemBase {
         bottomClimberLimit = new DigitalInput(DIOPorts.BOTTOM_CLIMBER_LIMIT_SWITCH);
     }
 
-    public void beginDown() {
+    public void beginDown(double speed) {
         mode = ClimbMode.DOWN;
+        motorSpeed = speed;
     }
 
-    public void beginUp() {
+    public void beginUp(double speed) {
         mode = ClimbMode.UP;
+        motorSpeed = speed;
     }
 
     public void end() {
@@ -56,9 +59,11 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     private void moveUp() {
-        if (limitsReached())
+        if (limitsReached()){
+            mode = ClimbMode.DISABLED;
             return;
-        motor.set(1);
+        }
+        motor.set(motorSpeed);
     }
 
     private void moveDown() {
@@ -66,10 +71,11 @@ public class ClimberSubsystem extends SubsystemBase {
             mode = ClimbMode.DISABLED;
             return;
         }
-        motor.set(-1);
+        motor.set(-motorSpeed);
     }
 
     private void disable() {
         motor.set(0);
+        motorSpeed = 0; 
     }
 }
