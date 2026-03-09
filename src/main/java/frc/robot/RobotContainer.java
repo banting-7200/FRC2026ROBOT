@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Commands.TurretCommands.ShootFuel;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
@@ -81,8 +80,8 @@ public class RobotContainer {
   SwerveInputStream driveAngularVelocity =
       SwerveInputStream.of(
               drivebase.getSwerveDrive(),
-              () -> driverXbox.getLeftY() * 1,
-              () -> driverXbox.getLeftX() * 1)
+              () -> driverXbox.getLeftY() * -1,
+              () -> driverXbox.getLeftX() * -1)
           .withControllerRotationAxis(driverXbox::getRightX)
           .deadband(OperatorConstants.DEADBAND)
           .scaleTranslation(0.8)
@@ -93,8 +92,7 @@ public class RobotContainer {
   SwerveInputStream driveDirectAngle =
       driveAngularVelocity
           .copy()
-          .withControllerHeadingAxis(
-              () -> driverXbox.getRightX() * -1, () -> driverXbox.getRightY() * -1)
+          .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
 
   //   // /**
@@ -116,31 +114,20 @@ public class RobotContainer {
     //  intake = new IntakeSubsystem();
     // feeder = new FeederSubsystem();
     turret = new TurretSubsystem();
-    // Changes the target pose to in front of blue hub
+
     targetPose = field.getPoseInFrontOfTag(26, 1.5);
-    // Setup the drive dashboard
     elasticSubsystem.putAutoChooser();
-    // Setup commands to be used in auton
-    registerNamedCommands();
-    // Configure the controller button bindings
     configureBindings();
-    // Stop sounding the alarm when the controller isnt connected
     DriverStation.silenceJoystickConnectionWarning(true);
   }
 
   private void configureBindings() {
-    // Main drive Command
     Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
-    // @SuppressWarnings("unused")
-    // // "Better" drive command that still needs to be tested, requires roborio 2.0
-    // Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(
-    //         driveDirectAngle);
 
-    //  // This line activates the drivebase
-    drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+    // drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
 
-    // // // #region Ctrl Bindings
-    // // // Creep drive
+    // #region Ctrl Bindings
+
     driverXbox
         .rightTrigger(0.2)
         .whileTrue(
@@ -151,56 +138,20 @@ public class RobotContainer {
                 () -> {
                   drivebase.setCreepDrive(false);
                 }));
-
-    // driverXbox
-    //     .b()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () -> {
-    //               turret.toggleFlywheel();
-    //               feeder.toggleState();
-    //             }));
-    // driverXbox.b().onTrue(new DriveToPose(drivebase, () -> targetPose, forwardPID, strafePID,
-    // thetaPID,
-    //         this::driverOverride, lights));
-    // driverXbox.y().onTrue(Commands.runOnce(intake::togglePosition));
-    // driverXbox.b().onTrue(Commands.runOnce(intake::spinUp));
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // #endregion
 
-    turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
-
-    // driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
+    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
-    // intake.run();
-    turret.run();
-    // feeder.run();
+    // turret.run();
   }
 
   public void robotPeriodic() {
-    // setLights(); // Set the light pattern
-    // lights.run(); // Turn the lights on
-    sendDashboardData(); // Send dashboard data
+    // setLights();
+    // lights.run();
     updateTelemetry();
-  }
-
-  // #region Dashboard
-
-  public void sendDashboardData() {
-    //     ElasticSubsystem.putBoolean("Rejecting Telemetry Updates", doRejectUpdate);
-    //     ElasticSubsystem.putColor("Lights",
-    // HelperFunctions.convertToGRB(lights.getLEDRequest().getColour()));
-    //     ElasticSubsystem.putString("Target Pose", targetPose.toString());
-    //    // ElasticSubsystem.putString("Robot Pose", drivebase.getPose().toString());
-    //     ElasticSubsystem.putNumber("Total Current Pull", PDH.getTotalCurrent());
-    // ElasticSubsystem.putBoolean("Is Creep Drive", drivebase.getCreepDrive());
-    // ElasticSubsystem.putNumber("Flywheel rpm", turret.getRPM());
-  }
-
-  public void setupDashboard() {
-    ElasticSubsystem.putBoolean("Lights Switch", true);
   }
 
   // #endregion
@@ -230,100 +181,18 @@ public class RobotContainer {
       }
 
       if (!doRejectUpdate) {
-        drivebase.setVisionStdDevs(VecBuilder.fill(0.5, 0.5, 9999)); // 1.5
+        drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
         drivebase.updateBotPose(robotPosition.pose);
-      } else {
-        // System.out.println("Rejecting Telemetry");
       }
-
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
     }
   }
 
-  //   public void updateTelemetry() {
-  //     try {
-  //       doRejectUpdate = false;
-  //       //   LimelightHelpers.PoseEstimate robotPosition =
-  //       //       LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-
-  //       Pose2d robotPosition = LimelightHelpers.getBotPose2d_wpiBlue("limelight-turret");
-  //       if (LimelightHelpers.getTargetCount("limelight-turret") < 1) {
-  //         doRejectUpdate = true;
-  //       }
-
-  //       if (!doRejectUpdate) {
-  //         drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
-
-  //         drivebase.updateBotPose(robotPosition);
-  //       } else {
-  //         System.out.println("REJECTING TELEMETRY");
-  //       }
-
-  //     } catch (Exception e) {
-  //       e.printStackTrace();
-  //       System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
-  //     }
-  //   }
-
-  //   public void updateTelemetry() {
-  //       // try-catch in case the limelight disconnects for a millisecond
-  //       try {
-  //           doRejectUpdate = false;
-  //           // Send the ll4 IMU data from the pigeon
-  //           LimelightHelpers.SetRobotOrientation(
-  //                   "limelight-back",
-  //                   drivebase.getHeading().getDegrees(),
-  //                   Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-  //                   drivebase.getPitch().getDegrees(), 0, 0, 0);
-  //           // Send the other ll4 IMU data from the pigeon
-  //           LimelightHelpers.SetRobotOrientation(
-  //                   "limelight-front",
-  //                   drivebase.getHeading().getDegrees(),
-  //                   Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-  //                   drivebase.getPitch().getDegrees(), 0, 0, 0);
-  //           // Get the estimated position from the back camera
-  //           LimelightHelpers.PoseEstimate robotPositionBack = LimelightHelpers
-  //                   .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-back");
-  //           // Get the esitamted position form the front camera
-  //           LimelightHelpers.PoseEstimate robotPositionFront = LimelightHelpers
-  //                   .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
-
-  //           // reject vision while spinning too fast
-  //           if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) >
-  // Math.toRadians(120))
-  //   {
-  //               doRejectUpdate = true;
-  //           }
-  //           // reject vision while a tag is not seen
-  //           if (robotPositionBack.tagCount < 1 && robotPositionFront.tagCount < 1) {
-  //               doRejectUpdate = true;
-  //           }
-
-  //           if (!doRejectUpdate) {
-  //               // set the "trust", in cameras
-  //               drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 10));
-  //               if (robotPositionBack.tagCount > 0) {
-  //                   // Send the pose to the drivebase
-  //                   drivebase.updateBotPose(robotPositionBack.pose);
-  //               }
-  //               if (robotPositionFront.tagCount > 0) {
-  //                   // Send the pose to the drivebase
-  //                   drivebase.updateBotPose(robotPositionFront.pose);
-  //               }
-
-  //           }
-
-  //       } catch (Exception e) {
-  //           e.printStackTrace();
-  //           System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
-  //       }
-  //   }
   // #endregion
   // #region Generic
 
-  // Set the lights to different patterns
   public void setLights() {
     // if (drivebase.getCreepDrive())
     //     lights.requestLEDState(new
@@ -341,15 +210,18 @@ public class RobotContainer {
       lights.requestLEDState(new LEDRequest(LEDState.RAINBOW).withPriority(-1));
   }
 
-  // Run the auto that was selected in the driver dashboard
-  // public Command getAutonomousCommand() {
-  //     return drivebase.getAutonomousCommand(elasticSubsystem.getSelectedAuto());
-  // }
+  //   public Command getAutonomousCommand() {
+  //     switch(elasticSubsystem.getSelectedAuto()){
+  //         case "DriveForward":
+  //         return new DriveForward(drivebase, drivebase::getPose, lights);
+  //     }
 
-  // Turn on the wheel brakes
-  // public void setMotorBrake(boolean brake) {
-  //     drivebase.setMotorBrake(brake);
-  // }
+  //       return drivebase.getAutonomousCommand(elasticSubsystem.getSelectedAuto());
+  //   }
+
+  public void setMotorBrake(boolean brake) {
+    drivebase.setMotorBrake(brake);
+  }
 
   // Overrides the path following in the driver tries to break free
   private boolean driverOverride() {
@@ -360,14 +232,5 @@ public class RobotContainer {
     return Math.abs(x) > threshold || Math.abs(y) > threshold;
   }
 
-  // #endregion
-  // #region NamedCommands
-
-  public void registerNamedCommands() {
-    // NamedCommands.registerCommand("Tag26_1.5m",
-    //         new DriveToPose(drivebase, () -> field.getPoseInFrontOfTag(26, 1.5), forwardPID,
-    // strafePID, thetaPID, () -> false, lights));
-
-  }
   // #endregion
 }

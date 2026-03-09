@@ -27,4 +27,13 @@ public class HelperFunctions {
   public static Transform2d translationToTransform(double x, double y) {
     return new Transform2d(new Translation2d(x, y), new Rotation2d());
   }
+
+  public static double ControllerToTurretDegrees(double x, double y) {
+
+    double deg = 0;
+    deg = Math.toDegrees(Math.atan2(y, x)) + 90;
+    if (deg > 180) deg -= 360;
+    if (deg < -180) deg += 360;
+    return -1 * deg;
+  }
 }

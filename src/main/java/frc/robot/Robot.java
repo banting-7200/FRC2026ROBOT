@@ -42,8 +42,6 @@ public class Robot extends TimedRobot {
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
-
-    m_robotContainer.setupDashboard();
   }
 
   @Override
@@ -70,7 +68,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    // m_robotContainer.setMotorBrake(true);
+    m_robotContainer.setMotorBrake(true);
     // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // Print the selected autonomous command upon autonomous init
