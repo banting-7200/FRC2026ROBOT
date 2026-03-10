@@ -98,4 +98,8 @@ public class TurretSubsystem extends SubsystemBase {
     degrees = HelperFunctions.clamp(degrees, MIN_ANGLE, MAX_ANGLE);
     turretAngle.set(degrees);
   }
+
+  public void runFlywheel() {
+    flywheelController.setSetpoint(flywheelSetpoint.get(), ControlType.kVelocity);
+  }
 }

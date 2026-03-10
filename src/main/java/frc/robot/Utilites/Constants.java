@@ -39,15 +39,18 @@ public final class Constants {
   }
 
   public static final class CANIds {
-    public static final int GYRO_ID = 2;
-    public static final int INTAKE_ID = 3;
-    public static final int INTAKE_PIVOT_ID = 4;
-    public static final int HOPPER_ID = 5;
-    public static final int FEEDER_ID = 6;
+    public static final int GYRO_ID = 1;
+    public static final int INTAKE_ID = 2;
+    public static final int INTAKE_PIVOT_ID = 3;
+    public static final int HOPPER_ID = 4;
+    public static final int FEEDER_FLYWHEEL_ID = 5;
+    public static final int FEEDER_BELT_ID = 6;
     public static final int TURRET_YAW_ID = 7;
-    public static final int TURRET_FLYWHEEL_ID = 8;
-    public static final int TURRET_HOOD_ID = 9;
-    public static final int PDH_ID = 20;
+    public static final int TURRET_HOOD_ID = 8;
+    public static final int TURRET_FLYWHEEL_ID = 9;
+    // 10 - 17 swerves
+    public static final int CLIMBER_ID = 18;
+    public static final int PDH_ID = 19;
   }
 
   // #endregion

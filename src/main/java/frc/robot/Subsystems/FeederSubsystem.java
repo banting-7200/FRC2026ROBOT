@@ -1,27 +1,31 @@
 package frc.robot.Subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants.CANIds;
-import frc.robot.Utilites.Constants.IntakeConstants;
 
 public class FeederSubsystem extends SubsystemBase {
 
-  SparkFlex motor;
+  SparkFlex flywheelMotor;
+  SparkFlex beltMotor;
   SparkFlexConfig config;
   boolean isOn = false;
 
   public FeederSubsystem() {
-    motor = new SparkFlex(CANIds.FEEDER_ID, MotorType.kBrushless);
+    beltMotor = new SparkFlex(CANIds.FEEDER_BELT_ID, MotorType.kBrushless);
     config = new SparkFlexConfig();
-    config.inverted(IntakeConstants.Pivot.INVERSION).idleMode(IdleMode.kCoast);
-    motor.configure(
-        config,
-        com.revrobotics.ResetMode.kResetSafeParameters,
-        com.revrobotics.PersistMode.kPersistParameters);
+    config.inverted(false).idleMode(IdleMode.kBrake);
+    beltMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    flywheelMotor = new SparkFlex(CANIds.FEEDER_FLYWHEEL_ID, MotorType.kBrushless);
+    config = new SparkFlexConfig();
+    config.inverted(false).idleMode(IdleMode.kBrake);
+    flywheelMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void toggleState() {
@@ -37,6 +41,9 @@ public class FeederSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    if (isOn) motor.set(0.3);
+    if (isOn) {
+      beltMotor.set(0.3);
+      flywheelMotor.set(0.3);
+    }
   }
 }

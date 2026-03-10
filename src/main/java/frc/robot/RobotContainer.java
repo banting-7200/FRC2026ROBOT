@@ -19,9 +19,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystems.ElasticSubsystem;
+import frc.robot.Subsystems.FeederSubsystem;
+import frc.robot.Subsystems.HopperSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 import frc.robot.Subsystems.LightsSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
-import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.OperatorConstants;
 import frc.robot.Utilites.Constants.PWMPorts;
@@ -58,11 +61,10 @@ public class RobotContainer {
           Constants.CANIds.PDH_ID,
           ModuleType.kRev); // The Rev PowerDistribution board, with its CAN ID
   FieldLayout field = new FieldLayout(); // The layout of all the april tags
-  // IntakeSubsystem intake;
-
-  //   HopperSubsystem hopper;
-  //   FeederSubsystem feeder;
-  TurretSubsystem turret;
+  IntakeSubsystem intake;
+  HopperSubsystem hopper;
+  FeederSubsystem feeder;
+  // TurretSubsystem turret;
 
   // The 3 PID Controllers needed for the accurate aligning to an april tag
   private PIDController forwardPID = new PIDController(3, 0, 0.001);
@@ -71,6 +73,7 @@ public class RobotContainer {
   // The target pose the robot will drive to, with a random position
   Pose2d targetPose = new Pose2d(14, 4, new Rotation2d(3.14));
   boolean doRejectUpdate;
+  boolean isShooting = false;
 
   // #region Swerve Setup
   /**
@@ -111,9 +114,10 @@ public class RobotContainer {
     DogLog.setOptions(new DogLogOptions().withCaptureDs(true));
     DogLog.setPdh(PDH);
 
-    //  intake = new IntakeSubsystem();
-    // feeder = new FeederSubsystem();
-    turret = new TurretSubsystem();
+    intake = new IntakeSubsystem();
+    feeder = new FeederSubsystem();
+    // turret = new TurretSubsystem();
+    hopper = new HopperSubsystem();
 
     targetPose = field.getPoseInFrontOfTag(26, 1.5);
     elasticSubsystem.putAutoChooser();
@@ -139,19 +143,30 @@ public class RobotContainer {
                   drivebase.setCreepDrive(false);
                 }));
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+
+    driverXbox
+        .leftTrigger(0.2)
+        .whileTrue(
+            new StartEndCommand(
+                () -> intake.setState(IntakeState.INTAKING_FUEL),
+                () -> intake.setState(IntakeState.NORMAL)));
+    driverXbox.leftBumper().onTrue(Commands.runOnce(() -> isShooting = !isShooting));
     // #endregion
 
-    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
-    // turret.run();
+    if (isShooting) {
+      hopper.run();
+      feeder.run();
+      // turret.runFlywheel();
+    }
   }
 
   public void robotPeriodic() {
     // setLights();
     // lights.run();
-    updateTelemetry();
+    // updateTelemetry();
   }
 
   // #endregion
