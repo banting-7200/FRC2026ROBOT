@@ -18,8 +18,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.AutoManualComands.ToggleManual;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
+import frc.robot.Subsystems.MainSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants;
@@ -63,6 +65,8 @@ public class RobotContainer {
   //   HopperSubsystem hopper;
   //   FeederSubsystem feeder;
   TurretSubsystem turret;
+
+  MainSubsystem mainSubsystem;
 
   // The 3 PID Controllers needed for the accurate aligning to an april tag
   private PIDController forwardPID = new PIDController(3, 0, 0.001);
@@ -114,7 +118,7 @@ public class RobotContainer {
     //  intake = new IntakeSubsystem();
     // feeder = new FeederSubsystem();
     turret = new TurretSubsystem();
-
+    mainSubsystem = new MainSubsystem(turret);
     targetPose = field.getPoseInFrontOfTag(26, 1.5);
     elasticSubsystem.putAutoChooser();
     configureBindings();
@@ -140,12 +144,13 @@ public class RobotContainer {
                 }));
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // #endregion
-
+    driverXbox.povUp().onTrue(new ToggleManual(mainSubsystem));
     // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
-    // turret.run();
+
+    mainSubsystem.run();
   }
 
   public void robotPeriodic() {
