@@ -2,30 +2,50 @@ package frc.robot.Subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants.CANIds;
+import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
 
 public class FeederSubsystem extends SubsystemBase {
 
   SparkFlex flywheelMotor;
   SparkFlex beltMotor;
-  SparkFlexConfig config;
+  SparkFlexConfig flywheelConfig;
+  SparkFlexConfig beltConfig;
   boolean isOn = false;
+  DoubleEntry feederFlywheelRPM;
+  DoubleEntry beltRPM;
+  SparkClosedLoopController flywheelController;
+  SparkClosedLoopController beltController;
 
   public FeederSubsystem() {
     beltMotor = new SparkFlex(CANIds.FEEDER_BELT_ID, MotorType.kBrushless);
-    config = new SparkFlexConfig();
-    config.inverted(false).idleMode(IdleMode.kBrake);
-    beltMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    beltController = beltMotor.getClosedLoopController();
+    beltConfig = new SparkFlexConfig();
+    beltConfig.inverted(false).idleMode(IdleMode.kCoast);
+    beltConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    beltConfig.closedLoop.pid(0, 0, 0).feedForward.kV(0.002);
+    beltMotor.configure(beltConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    beltRPM = TunableSparkFlexPid.create("BeltRPM", beltMotor, beltConfig, 0);
 
     flywheelMotor = new SparkFlex(CANIds.FEEDER_FLYWHEEL_ID, MotorType.kBrushless);
-    config = new SparkFlexConfig();
-    config.inverted(false).idleMode(IdleMode.kBrake);
-    flywheelMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    flywheelController = flywheelMotor.getClosedLoopController();
+    flywheelConfig = new SparkFlexConfig();
+    flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
+    flywheelConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    flywheelConfig.closedLoop.pid(0, 0, 0).feedForward.kV(0.0018);
+    flywheelMotor.configure(
+        flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    feederFlywheelRPM =
+        TunableSparkFlexPid.create("FeederFlyWheelRPM", flywheelMotor, flywheelConfig, 0);
   }
 
   public void toggleState() {
@@ -41,9 +61,12 @@ public class FeederSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    if (isOn) {
-      beltMotor.set(0.3);
-      flywheelMotor.set(0.3);
-    }
+    // if (isOn) {
+    //   beltMotor.set(0.5);
+    //   flywheelMotor.set(0.4);
+    // }
+    beltController.setSetpoint(beltRPM.get(), ControlType.kVelocity);
+    // System.out.println(flywheelMotor.getEncoder().getVelocity());
+    flywheelController.setSetpoint(feederFlywheelRPM.get(), ControlType.kVelocity);
   }
 }

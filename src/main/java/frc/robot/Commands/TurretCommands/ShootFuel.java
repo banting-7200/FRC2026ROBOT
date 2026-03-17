@@ -59,12 +59,14 @@ public class ShootFuel extends Command {
     }
 
     Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+
+    Double distanceToHub = turretToTargetVector.getNorm();
     Rotation2d turretFieldAngle = turretToTargetVector.getAngle(); // Angle to HUB
     Rotation2d robotRelativeTurretAngle = turretFieldAngle.minus(pose.getRotation());
 
     double desiredAngleInDegrees = robotRelativeTurretAngle.getDegrees();
     desiredAngle = desiredAngleInDegrees;
     turret.setTurretAngle(desiredAngleInDegrees);
+    // turret.setTurretHubDistance(distanceToHub);
     // feeder.run();
     // hopper.run();
   }

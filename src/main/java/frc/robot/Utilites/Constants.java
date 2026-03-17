@@ -57,7 +57,7 @@ public final class Constants {
   // #region Intake
   public static final class IntakeConstants {
     public static final class Pivot {
-      public static final double P = 0;
+      public static final double P = 0.007;
       public static final double I = 0;
       public static final double D = 0;
       public static final int CURRENT_LIMIT = 20;
@@ -65,15 +65,16 @@ public final class Constants {
     }
 
     public static final class Intake {
-      public static final double P = 0;
+      public static final double P = 0.0001;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double CURRENT_LIMIT = 40;
+      public static final double V = 0.0026;
+      public static final int CURRENT_LIMIT = 40;
     }
 
-    public static final double INTAKE_POSITION = 57;
-    public static final double STORED_POSITION = 200;
-    public static final double NORMAL_POSITION = 100;
+    public static final double INTAKE_POSITION = 70; // 58.8
+    public static final double STORED_POSITION = 198;
+    public static final double NORMAL_POSITION = 140; // 160
 
     public static final double INTAKE_RPM = 0;
   }
@@ -98,21 +99,22 @@ public final class Constants {
       public static final double I = 0;
       public static final double D = 0.012;
       public static final double CURRENT_LIMIT = 40;
-      public static final double GEAR_RATIO = 10;
+      public static final double GEAR_RATIO = 1.6; // 15 / 9.375
     }
 
     public static final class Flywheel {
-      public static final double P = 0;
+      public static final double P = 0.00001;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double CURRENT_LIMIT = 40;
+      public static final double V = 0.0021;
+      public static final int CURRENT_LIMIT = 40;
     }
 
     public static final class Hood {
       public static final double P = 0;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double CURRENT_LIMIT = 40;
+      public static final int CURRENT_LIMIT = 40;
     }
 
     public static final double MAX_DISTANCE = 0;
@@ -122,13 +124,12 @@ public final class Constants {
     public static final double MIN_DISTANCE_RPM = 0;
     public static final double MIN_DISTANCE_PITCH = 0;
 
-    // Min yaw -> turret rotated fully left/west
-    public static final double MIN_YAW = 0;
-    public static final double MID_YAW = 0;
-    public static final double MAX_YAW = 0;
+    // Max yaw -> turret rotated fully left
+    public static final double MIN_YAW = -170;
+    public static final double MAX_YAW = 170;
 
-    public static final double TURRET_FORWARD_OFFSET = 0.0; // meters
-    public static final double TURRET_RIGHT_OFFSET = 0.0; // meters, negative for left offset
+    public static final double TURRET_FORWARD_OFFSET = 0.0984504; // meters
+    public static final double TURRET_RIGHT_OFFSET = -0.1682496; // meters, negative for left offset
   }
   // #endregion
 }

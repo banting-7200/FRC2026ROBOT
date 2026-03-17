@@ -22,9 +22,9 @@ import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
-import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 import frc.robot.Subsystems.LightsSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
+import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.OperatorConstants;
 import frc.robot.Utilites.Constants.PWMPorts;
@@ -64,7 +64,7 @@ public class RobotContainer {
   IntakeSubsystem intake;
   HopperSubsystem hopper;
   FeederSubsystem feeder;
-  // TurretSubsystem turret;
+  TurretSubsystem turret;
 
   // The 3 PID Controllers needed for the accurate aligning to an april tag
   private PIDController forwardPID = new PIDController(3, 0, 0.001);
@@ -88,7 +88,7 @@ public class RobotContainer {
           .withControllerRotationAxis(driverXbox::getRightX)
           .deadband(OperatorConstants.DEADBAND)
           .scaleTranslation(0.8)
-          .allianceRelativeControl(true);
+          .allianceRelativeControl(false);
 
   //   /** Clone's the angular velocity input stream and converts it to a fieldRelative input
   // stream. */
@@ -97,13 +97,6 @@ public class RobotContainer {
           .copy()
           .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
-
-  //   // /**
-  //   //  * Clone's the angular velocity input stream and converts it to a robotRelative
-  //   //  * input stream.
-  //   //  */
-  SwerveInputStream driveRobotOriented =
-      driveAngularVelocity.copy().robotRelative(true).allianceRelativeControl(false);
 
   // #endregion
 
@@ -116,19 +109,20 @@ public class RobotContainer {
 
     intake = new IntakeSubsystem();
     feeder = new FeederSubsystem();
-    // turret = new TurretSubsystem();
+    turret = new TurretSubsystem();
     hopper = new HopperSubsystem();
 
     targetPose = field.getPoseInFrontOfTag(26, 1.5);
     elasticSubsystem.putAutoChooser();
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
+    // drivebase.updateBotPose(new Pose2d(2, 3, new Rotation2d(0)));
   }
 
   private void configureBindings() {
     Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
 
-    // drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+    drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
 
     // #region Ctrl Bindings
 
@@ -144,23 +138,35 @@ public class RobotContainer {
                 }));
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
 
-    driverXbox
-        .leftTrigger(0.2)
-        .whileTrue(
-            new StartEndCommand(
-                () -> intake.setState(IntakeState.INTAKING_FUEL),
-                () -> intake.setState(IntakeState.NORMAL)));
-    driverXbox.leftBumper().onTrue(Commands.runOnce(() -> isShooting = !isShooting));
-    // #endregion
+    // driverXbox
+    //     .leftTrigger(0.2)
+    //     .whileTrue(
+    //         new StartEndCommand(
+    //             () -> intake.setState(IntakeState.INTAKING_FUEL),
+    //             () -> intake.setState(IntakeState.NORMAL)));
 
+    // driverXbox.leftBumper().onTrue(Commands.runOnce(() -> isShooting = !isShooting));
+    // #endregion
+    // drivebase.updateBotPose(new Pose2d(2, 4, new Rotation2d(0)));
+
+    //  turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
-    if (isShooting) {
-      hopper.run();
-      feeder.run();
-      // turret.runFlywheel();
-    }
+    // if (isShooting) {
+    //   hopper.run();
+    //   feeder.run();
+    //   turret.runFlywheel();
+    // }
+    // turret.runFlywheel();
+    // hopper.turnOn();
+    // hopper.run();
+    // feeder.turnOn();
+    // feeder.run();
+    // intake.run();
+    // turret.setTurretAngle(0);
+    // turret.run();
+    // System.out.println(drivebase.getHeading().getDegrees());
   }
 
   public void robotPeriodic() {
@@ -176,7 +182,15 @@ public class RobotContainer {
     try {
       doRejectUpdate = false;
       LimelightHelpers.SetRobotOrientation(
-          "limelight-turret",
+          "limelight-left",
+          drivebase.getHeading().getDegrees(),
+          Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
+          drivebase.getPitch().getDegrees(),
+          0,
+          0,
+          0);
+      LimelightHelpers.SetRobotOrientation(
+          "limelight-right",
           drivebase.getHeading().getDegrees(),
           Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
           drivebase.getPitch().getDegrees(),
@@ -184,20 +198,21 @@ public class RobotContainer {
           0,
           0);
 
-      LimelightHelpers.PoseEstimate robotPosition =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-turret");
+      LimelightHelpers.PoseEstimate robotPositionLeft =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
+      LimelightHelpers.PoseEstimate robotPositionRight =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
 
       if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(120)) {
-
         doRejectUpdate = true;
       }
-      if (robotPosition.tagCount < 1) {
+      if (robotPositionLeft.tagCount < 1) {
         doRejectUpdate = true;
       }
 
       if (!doRejectUpdate) {
         drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
-        drivebase.updateBotPose(robotPosition.pose);
+        drivebase.updateBotPose(robotPositionLeft.pose);
       }
     } catch (Exception e) {
       e.printStackTrace();
