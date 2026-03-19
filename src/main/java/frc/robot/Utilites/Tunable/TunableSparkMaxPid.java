@@ -2,7 +2,6 @@ package frc.robot.Utilites.Tunable;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import dev.doglog.DogLog;
@@ -73,13 +72,7 @@ public class TunableSparkMaxPid {
               config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         });
 
-    DoubleSubscriber setpoint =
-        DogLog.tunable(
-            name + "/Setpoint",
-            0.0,
-            newSetpoint -> {
-              motor.getClosedLoopController().setSetpoint(newSetpoint, ControlType.kVelocity);
-            });
+    DoubleSubscriber setpoint = DogLog.tunable(name + "/Setpoint", 0.0);
 
     return setpoint.getTopic().getEntry(defaultSetpoint);
   }

@@ -6,12 +6,18 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
+import frc.robot.Subsystems.LightsSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
+import frc.robot.Utilites.Constants.FeederConstants;
+import frc.robot.Utilites.Constants.HopperConstants;
 import frc.robot.Utilites.Constants.TurretConstants;
 import frc.robot.Utilites.FieldLayout;
+import frc.robot.Utilites.LEDRequest;
+import frc.robot.Utilites.LEDRequest.LEDState;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -20,18 +26,25 @@ public class ShootFuel extends Command {
   HopperSubsystem hopper;
   FeederSubsystem feeder;
   TurretSubsystem turret;
+  LightsSubsystem lights;
   FieldLayout field = new FieldLayout();
   Supplier<Pose2d> robotPose;
   Pose2d pose;
   double desiredAngle;
   double tolerance = 1;
 
-  public ShootFuel(TurretSubsystem turret, Supplier<Pose2d> robotPose) {
+  public ShootFuel(
+      TurretSubsystem turret,
+      Supplier<Pose2d> robotPose,
+      HopperSubsystem hopper,
+      FeederSubsystem feeder,
+      LightsSubsystem lights) {
     this.turret = turret;
-    // this.feeder = feeder;
-    // this.hopper = hopper;
     this.robotPose = robotPose;
-    addRequirements(turret);
+    this.hopper = hopper;
+    this.feeder = feeder;
+    this.lights = lights;
+    addRequirements(turret, hopper, feeder);
   }
 
   @Override
@@ -60,15 +73,25 @@ public class ShootFuel extends Command {
 
     Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+
     Double distanceToHub = turretToTargetVector.getNorm();
+    // System.out.println(distanceToHub);
     Rotation2d turretFieldAngle = turretToTargetVector.getAngle(); // Angle to HUB
-    Rotation2d robotRelativeTurretAngle = turretFieldAngle.minus(pose.getRotation());
+    Rotation2d robotRelativeTurretAngle =
+        turretFieldAngle.minus(pose.getRotation().plus(Rotation2d.fromDegrees(180)));
 
     double desiredAngleInDegrees = robotRelativeTurretAngle.getDegrees();
     desiredAngle = desiredAngleInDegrees;
     turret.setTurretAngle(desiredAngleInDegrees);
-    // turret.setTurretHubDistance(distanceToHub);
-    // feeder.run();
-    // hopper.run();
+    turret.setTurretHubDistance(distanceToHub);
+    turret.setFlywheelRPM(TurretConstants.SHOOTING_RPM);
+    if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM - 500) {
+      feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
+      hopper.set(HopperConstants.SHOOTING_RPM);
+    } else {
+      lights.requestLEDState(
+          new LEDRequest(LEDState.BLINK).withBlinkRate(0.1).withColour(Color.kRed).withPriority(1));
+      feeder.set(0, 0);
+      hopper.set(0);
+    }
   }
 
   @Override
@@ -80,6 +103,6 @@ public class ShootFuel extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    System.out.println("AIMING DONE");
+    // System.out.println("AIMING DONE");
   }
 }

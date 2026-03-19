@@ -15,17 +15,13 @@ import java.util.List;
 // TODO Implement Elastic notifications
 // -1 - Robot Disabled
 
-// 0 - Has gamePiece / Done command
+// 0 - Can't see April tags
 
-// 1 - Aligning to aprilTag (Fine adjustment/PID)
+// 1 - Can't shoot fuel
 
-// 2 - Aligning to aprilTag/GamePiece (Path following)
+// 2 - Ready to Shoot
 
-// 3 - Ready to do something
-
-// 4 - Creep Drive mode
-
-// 5 - Normal driving
+// 3 - Normal Driving
 
 public class LightsSubsystem extends SubsystemBase {
 

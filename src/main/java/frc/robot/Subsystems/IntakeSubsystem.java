@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.networktables.DoubleEntry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants.CANIds;
 import frc.robot.Utilites.Constants.IntakeConstants;
@@ -34,8 +35,10 @@ public class IntakeSubsystem extends SubsystemBase {
   boolean isUp = false;
   boolean isSpinning = false;
   double intakeVel = 0;
-  DoubleEntry pivotAngle;
+  double agitatingSpeedFactor = 7;
+  // DoubleEntry pivotAngle;
   DoubleEntry intakeRPM;
+  double pivotAngle;
 
   public IntakeSubsystem() {
     intakeMotor = new SparkMax(CANIds.INTAKE_ID, MotorType.kBrushless);
@@ -69,13 +72,16 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
     pivotConfig.closedLoop.pid(
         IntakeConstants.Pivot.P, IntakeConstants.Pivot.I, IntakeConstants.Pivot.D);
+    // pivotConfig.softLimit.forwardSoftLimit(agitatingSpeedFactor)
 
     pivotMotor.configure(
         pivotConfig,
         com.revrobotics.ResetMode.kResetSafeParameters,
         com.revrobotics.PersistMode.kPersistParameters);
 
-    pivotAngle = TunableSparkMaxPid.create("Pivot Angle", pivotMotor, pivotConfig, 160);
+    // pivotAngle =
+    //     TunableSparkMaxPid.create(
+    //         "Pivot Angle", pivotMotor, pivotConfig, IntakeConstants.NORMAL_POSITION);
   }
 
   public void setIdleMode(IdleMode idleMode) {
@@ -91,18 +97,22 @@ public class IntakeSubsystem extends SubsystemBase {
     switch (state) {
       case INTAKING_FUEL:
         isAgitating = false;
-        setpoint = IntakeConstants.INTAKE_POSITION;
+        pivotAngle = IntakeConstants.INTAKE_POSITION;
+        intakeRPM.set(4000);
         break;
       case AGITATING_FUEL:
         isAgitating = true;
+        intakeRPM.set(2000);
         break;
       case STORED:
         isAgitating = false;
         setpoint = IntakeConstants.STORED_POSITION;
+        intakeRPM.set(0);
         break;
       case NORMAL:
         isAgitating = false;
-        setpoint = IntakeConstants.NORMAL_POSITION;
+        pivotAngle = IntakeConstants.NORMAL_POSITION;
+        intakeRPM.set(0);
         break;
     }
   }
@@ -114,10 +124,20 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    // pivotController.setSetpoint(pivotAngle.get(), ControlType.kPosition);
-    // pivotMotor.set(0.2);
+    if (isAgitating) agitate();
+    pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
     intakeController.setSetpoint(intakeRPM.get(), ControlType.kVelocity);
-    // System.out.println(pivotMotor.getAbsoluteEncoder().getPosition());
+  }
+
+  public void agitate() {
+    double time = Timer.getFPGATimestamp();
+
+    double midpoint =
+        (IntakeConstants.LOW_AGITATE_POSITION + IntakeConstants.HIGH_AGITATE_POSITION) / 2.0;
+    double amplitude =
+        (IntakeConstants.HIGH_AGITATE_POSITION - IntakeConstants.LOW_AGITATE_POSITION) / 2.0;
+
+    pivotAngle = midpoint + amplitude * Math.sin(time * agitatingSpeedFactor);
   }
 
   public void spinUp() {

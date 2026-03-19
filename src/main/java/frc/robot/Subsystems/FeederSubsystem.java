@@ -9,10 +9,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants.CANIds;
-import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
 
 public class FeederSubsystem extends SubsystemBase {
 
@@ -21,8 +19,10 @@ public class FeederSubsystem extends SubsystemBase {
   SparkFlexConfig flywheelConfig;
   SparkFlexConfig beltConfig;
   boolean isOn = false;
-  DoubleEntry feederFlywheelRPM;
-  DoubleEntry beltRPM;
+  //   DoubleEntry feederFlywheelRPM;
+  //   DoubleEntry beltRPM;
+  double feederFlywheelRPM = 0;
+  double beltRPM = 0;
   SparkClosedLoopController flywheelController;
   SparkClosedLoopController beltController;
 
@@ -34,7 +34,7 @@ public class FeederSubsystem extends SubsystemBase {
     beltConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     beltConfig.closedLoop.pid(0, 0, 0).feedForward.kV(0.002);
     beltMotor.configure(beltConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    beltRPM = TunableSparkFlexPid.create("BeltRPM", beltMotor, beltConfig, 0);
+    // beltRPM = TunableSparkFlexPid.create("BeltRPM", beltMotor, beltConfig, 0);
 
     flywheelMotor = new SparkFlex(CANIds.FEEDER_FLYWHEEL_ID, MotorType.kBrushless);
     flywheelController = flywheelMotor.getClosedLoopController();
@@ -44,29 +44,14 @@ public class FeederSubsystem extends SubsystemBase {
     flywheelConfig.closedLoop.pid(0, 0, 0).feedForward.kV(0.0018);
     flywheelMotor.configure(
         flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    feederFlywheelRPM =
-        TunableSparkFlexPid.create("FeederFlyWheelRPM", flywheelMotor, flywheelConfig, 0);
+    // feederFlywheelRPM =
+    //     TunableSparkFlexPid.create("FeederFlyWheelRPM", flywheelMotor, flywheelConfig, 0);
   }
 
-  public void toggleState() {
-    isOn = !isOn;
-  }
-
-  public void turnOn() {
-    isOn = true;
-  }
-
-  public void turnOff() {
-    isOn = false;
-  }
-
-  public void run() {
-    // if (isOn) {
-    //   beltMotor.set(0.5);
-    //   flywheelMotor.set(0.4);
-    // }
-    beltController.setSetpoint(beltRPM.get(), ControlType.kVelocity);
-    // System.out.println(flywheelMotor.getEncoder().getVelocity());
-    flywheelController.setSetpoint(feederFlywheelRPM.get(), ControlType.kVelocity);
+  public void set(double beltRPM, double feederFlywheelRPM) {
+    this.beltRPM = beltRPM;
+    this.feederFlywheelRPM = feederFlywheelRPM;
+    beltController.setSetpoint(beltRPM, ControlType.kVelocity);
+    flywheelController.setSetpoint(feederFlywheelRPM, ControlType.kVelocity);
   }
 }

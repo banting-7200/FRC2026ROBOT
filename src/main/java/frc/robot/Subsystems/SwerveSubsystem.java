@@ -666,8 +666,8 @@ public class SwerveSubsystem extends SubsystemBase {
     else setMaximumSpeeds(DrivebaseConstants.MAX_SPEED, DrivebaseConstants.MAX_ANGULAR_VELOCITY);
   }
 
-  public void updateBotPose(Pose2d pose) {
-    swerveDrive.addVisionMeasurement(pose, Timer.getFPGATimestamp());
+  public void updateBotPose(Pose2d pose, double timeStamp) {
+    swerveDrive.addVisionMeasurement(pose, timeStamp);
   }
 
   public void setVisionStdDevs(Matrix<N3, N1> visionMeasurementStdDevs) {

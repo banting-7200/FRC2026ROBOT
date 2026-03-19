@@ -11,7 +11,7 @@ public final class Constants {
   // #region Generic
   public static final int XBOX_PORT = 0;
   public static final int BUTTON_BOX_PORT = 1;
-  public static final int LIGHTS_AMOUNT = 50;
+  public static final int LIGHTS_AMOUNT = 149;
 
   public static final class DrivebaseConstants {
     public static final double ROBOT_MASS = 63 * 0.453592; // 63lbs to kg
@@ -72,11 +72,22 @@ public final class Constants {
       public static final int CURRENT_LIMIT = 40;
     }
 
-    public static final double INTAKE_POSITION = 70; // 58.8
-    public static final double STORED_POSITION = 198;
+    public static final double INTAKE_POSITION = 59;
+    public static final double STORED_POSITION = 178; // 198
     public static final double NORMAL_POSITION = 140; // 160
 
+    public static final double LOW_AGITATE_POSITION = 64;
+    public static final double HIGH_AGITATE_POSITION = 170;
+
     public static final double INTAKE_RPM = 0;
+  }
+
+  public static final class HopperConstants {
+    public static final double P = 0;
+    public static final double I = 0;
+    public static final double D = 0;
+    public static final double CURRENT_LIMIT = 40;
+    public static final double SHOOTING_RPM = 1000;
   }
 
   // #endregion
@@ -88,16 +99,17 @@ public final class Constants {
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
 
-    public static final double OUTPUT_RPM = 0;
+    public static final double BELT_RPM = 2600;
+    public static final double FLYWHEEL_RPM = 3000;
   }
 
   // #endregion
   // #region Turret
   public static final class TurretConstants {
     public static final class Yaw {
-      public static final double P = 0.022;
+      public static final double P = 0.02; // 0.022
       public static final double I = 0;
-      public static final double D = 0.012;
+      public static final double D = 0.01; // 0.012
       public static final double CURRENT_LIMIT = 40;
       public static final double GEAR_RATIO = 1.6; // 15 / 9.375
     }
@@ -111,25 +123,26 @@ public final class Constants {
     }
 
     public static final class Hood {
-      public static final double P = 0;
+      public static final double P = 0.05;
       public static final double I = 0;
-      public static final double D = 0;
-      public static final int CURRENT_LIMIT = 40;
+      public static final double D = 0.003;
+      public static final int CURRENT_LIMIT = 20;
     }
 
-    public static final double MAX_DISTANCE = 0;
+    public static final double MAX_DISTANCE = 4;
     public static final double MAX_DISTANCE_RPM = 0;
-    public static final double MAX_DISTANCE_PITCH = 0;
-    public static final double MIN_DISTANCE = 0;
+    public static final double MAX_DISTANCE_PITCH = 355;
+    public static final double MIN_DISTANCE = 2.1;
     public static final double MIN_DISTANCE_RPM = 0;
-    public static final double MIN_DISTANCE_PITCH = 0;
+    public static final double MIN_DISTANCE_PITCH = 160;
+    public static final double SHOOTING_RPM = 5000;
 
     // Max yaw -> turret rotated fully left
-    public static final double MIN_YAW = -170;
-    public static final double MAX_YAW = 170;
+    public static final double MIN_YAW = -155;
+    public static final double MAX_YAW = 169;
 
-    public static final double TURRET_FORWARD_OFFSET = 0.0984504; // meters
-    public static final double TURRET_RIGHT_OFFSET = -0.1682496; // meters, negative for left offset
+    public static final double TURRET_FORWARD_OFFSET = -0.0984504; // meters
+    public static final double TURRET_RIGHT_OFFSET = 0.1682496; // meters, negative for left offset
   }
   // #endregion
 }

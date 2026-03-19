@@ -11,17 +11,22 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.TurretCommands.ResetTurret;
+import frc.robot.Commands.TurretCommands.ShootFuel;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 import frc.robot.Subsystems.LightsSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
@@ -33,6 +38,8 @@ import frc.robot.Utilites.LEDRequest;
 import frc.robot.Utilites.LEDRequest.LEDState;
 import frc.robot.Utilites.LimelightHelpers;
 import java.io.File;
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import swervelib.SwerveInputStream;
 
 /**
@@ -44,13 +51,10 @@ import swervelib.SwerveInputStream;
 // Main class
 public class RobotContainer {
   // Object initalizations
-  final CommandXboxController driverXbox =
-      new CommandXboxController(0); // Controller, to USB port 0
+  final CommandXboxController driverXbox = new CommandXboxController(0);
+  final CommandXboxController operatorXbox = new CommandXboxController(1);
   private final SwerveSubsystem drivebase =
-      new SwerveSubsystem(
-          new File(
-              Filesystem.getDeployDirectory(),
-              "swerve/neo")); // The swerve base, with the variable from the json files
+      new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   LightsSubsystem lights =
       new LightsSubsystem(
           PWMPorts.LIGHT_PORT,
@@ -72,7 +76,8 @@ public class RobotContainer {
   private PIDController thetaPID = new PIDController(0.05, 0, 0.001);
   // The target pose the robot will drive to, with a random position
   Pose2d targetPose = new Pose2d(14, 4, new Rotation2d(3.14));
-  boolean doRejectUpdate;
+  boolean doRejectLeftLL;
+  boolean doRejectRightLL;
   boolean isShooting = false;
 
   // #region Swerve Setup
@@ -85,17 +90,17 @@ public class RobotContainer {
               drivebase.getSwerveDrive(),
               () -> driverXbox.getLeftY() * -1,
               () -> driverXbox.getLeftX() * -1)
-          .withControllerRotationAxis(driverXbox::getRightX)
+          .withControllerRotationAxis(getAdjustedRightX())
           .deadband(OperatorConstants.DEADBAND)
           .scaleTranslation(0.8)
-          .allianceRelativeControl(false);
+          .allianceRelativeControl(true);
 
   //   /** Clone's the angular velocity input stream and converts it to a fieldRelative input
   // stream. */
   SwerveInputStream driveDirectAngle =
       driveAngularVelocity
           .copy()
-          .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
+          .withControllerHeadingAxis(getAdjustedRightX(), getAdjustedRightY())
           .headingWhile(true);
 
   // #endregion
@@ -116,7 +121,32 @@ public class RobotContainer {
     elasticSubsystem.putAutoChooser();
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
+    drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
     // drivebase.updateBotPose(new Pose2d(2, 3, new Rotation2d(0)));
+  }
+
+  private DoubleSupplier getAdjustedRightX() {
+    return () -> {
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+      double multiplier = -1.0;
+
+      if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+        multiplier = 1.0;
+      }
+      return driverXbox.getRightX() * multiplier;
+    };
+  }
+
+  private DoubleSupplier getAdjustedRightY() {
+    return () -> {
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+      double multiplier = -1.0;
+
+      if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+        multiplier = 1.0;
+      }
+      return driverXbox.getRightY() * multiplier;
+    };
   }
 
   private void configureBindings() {
@@ -136,106 +166,89 @@ public class RobotContainer {
                 () -> {
                   drivebase.setCreepDrive(false);
                 }));
-    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
 
-    // driverXbox
-    //     .leftTrigger(0.2)
-    //     .whileTrue(
-    //         new StartEndCommand(
-    //             () -> intake.setState(IntakeState.INTAKING_FUEL),
-    //             () -> intake.setState(IntakeState.NORMAL)));
+    driverXbox
+        .leftTrigger(0.2)
+        .and(operatorXbox.leftTrigger(0.2).negate())
+        .whileTrue(
+            new StartEndCommand(
+                () -> intake.setState(IntakeState.INTAKING_FUEL),
+                () -> intake.setState(IntakeState.NORMAL),
+                intake));
 
-    // driverXbox.leftBumper().onTrue(Commands.runOnce(() -> isShooting = !isShooting));
+    operatorXbox
+        .rightTrigger(0.2)
+        .whileTrue(new ShootFuel(turret, drivebase::getPose, hopper, feeder, lights))
+        .whileFalse(new ResetTurret(turret, hopper, feeder));
+
+    operatorXbox
+        .leftTrigger(0.2)
+        .whileTrue(
+            new StartEndCommand(
+                () -> intake.setState(IntakeState.AGITATING_FUEL),
+                () -> intake.setState(IntakeState.NORMAL),
+                intake));
+
+    // driverXbox.leftBumper().whileTrue(new ParallelCommandGroup(Commands.runOnce(() ->
+    // hopper.run(), hopper), Commands.runOnce(() -> feeder.run(), feeder)));
     // #endregion
     // drivebase.updateBotPose(new Pose2d(2, 4, new Rotation2d(0)));
-
-    //  turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
+    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
+    // driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
-    // if (isShooting) {
-    //   hopper.run();
-    //   feeder.run();
-    //   turret.runFlywheel();
-    // }
-    // turret.runFlywheel();
-    // hopper.turnOn();
-    // hopper.run();
-    // feeder.turnOn();
-    // feeder.run();
-    // intake.run();
-    // turret.setTurretAngle(0);
-    // turret.run();
-    // System.out.println(drivebase.getHeading().getDegrees());
+    turret.run();
+    intake.run();
   }
 
   public void robotPeriodic() {
-    // setLights();
-    // lights.run();
-    // updateTelemetry();
+    setLights();
+    lights.run();
+    updateTelemetry();
   }
 
   // #endregion
   // #region Telemetry
 
   public void updateTelemetry() {
+    Rotation2d gyroAngle = drivebase.getHeading();
+    double angularVelocity = Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond);
+
+    LimelightHelpers.SetRobotOrientation(
+        "limelight-left", gyroAngle.getDegrees(), angularVelocity, 0, 0, 0, 0);
+    LimelightHelpers.SetRobotOrientation(
+        "limelight-right", gyroAngle.getDegrees(), angularVelocity, 0, 0, 0, 0);
+
     try {
-      doRejectUpdate = false;
-      LimelightHelpers.SetRobotOrientation(
-          "limelight-left",
-          drivebase.getHeading().getDegrees(),
-          Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-          drivebase.getPitch().getDegrees(),
-          0,
-          0,
-          0);
-      LimelightHelpers.SetRobotOrientation(
-          "limelight-right",
-          drivebase.getHeading().getDegrees(),
-          Math.toDegrees(drivebase.getRobotVelocity().omegaRadiansPerSecond),
-          drivebase.getPitch().getDegrees(),
-          0,
-          0,
-          0);
-
-      LimelightHelpers.PoseEstimate robotPositionLeft =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
-      LimelightHelpers.PoseEstimate robotPositionRight =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
-
-      if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(120)) {
-        doRejectUpdate = true;
-      }
-      if (robotPositionLeft.tagCount < 1) {
-        doRejectUpdate = true;
-      }
-
-      if (!doRejectUpdate) {
-        drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
-        drivebase.updateBotPose(robotPositionLeft.pose);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("NO DATA FROM LIMELIGHT(S) | " + e.getLocalizedMessage());
+      processLimelightUpdate("limelight-left");
+      //  processLimelightUpdate("limelight-right");
+    } catch (NullPointerException e) {
+      System.out.println("NO LL DATA");
     }
+  }
+
+  private void processLimelightUpdate(String name) {
+    LimelightHelpers.PoseEstimate estimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
+
+    // Reject if no tags or spinning too fast
+    if (estimate.tagCount == 0) return;
+    if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(720)) return;
+
+    double distanceToCurrent =
+        drivebase.getPose().getTranslation().getDistance(estimate.pose.getTranslation());
+    if (distanceToCurrent > 2) return;
+
+    drivebase.updateBotPose(estimate.pose, estimate.timestampSeconds);
   }
 
   // #endregion
   // #region Generic
 
   public void setLights() {
-    // if (drivebase.getCreepDrive())
-    //     lights.requestLEDState(new
-    // LEDRequest(LEDState.SOLID).withColour(HelperFunctions.convertToGRB(Color.kRed))
-    //             .withPriority(4).withBlinkRate(0.7));
-    // else
-    //     lights.requestLEDState(new
-    // LEDRequest(LEDState.SOLID).withColour(HelperFunctions.convertToGRB(Color.kGreen))
-    //             .withPriority(5));
-
-    if (!ElasticSubsystem.getBoolean("Lights Switch"))
-      lights.requestLEDState(new LEDRequest(LEDState.OFF).withPriority(-999));
-
+    lights.requestLEDState(new LEDRequest(LEDState.SOLID).withColour(Color.kGreen).withPriority(3));
     if (DriverStation.isDisabled())
       lights.requestLEDState(new LEDRequest(LEDState.RAINBOW).withPriority(-1));
   }
