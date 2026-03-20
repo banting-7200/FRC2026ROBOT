@@ -82,8 +82,9 @@ public class ShootFuel extends Command {
     desiredAngle = desiredAngleInDegrees;
     turret.setTurretAngle(desiredAngleInDegrees);
     turret.setTurretHubDistance(distanceToHub);
+    // System.out.println(distance);
     turret.setFlywheelRPM(TurretConstants.SHOOTING_RPM);
-    if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM - 500) {
+    if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM) {
       feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
       hopper.set(HopperConstants.SHOOTING_RPM);
     } else {

@@ -22,7 +22,11 @@ public class FixJam extends Command {
   public void initialize() {}
 
   @Override
-  public void execute() {}
+  public void execute() {
+    turret.setFlywheelRPM(-500);
+    hopper.set(-500);
+    feeder.set(-500, -500);
+  }
 
   @Override
   public boolean isFinished() {

@@ -11,7 +11,7 @@ public final class Constants {
   // #region Generic
   public static final int XBOX_PORT = 0;
   public static final int BUTTON_BOX_PORT = 1;
-  public static final int LIGHTS_AMOUNT = 149;
+  public static final int LIGHTS_AMOUNT = 120;
 
   public static final class DrivebaseConstants {
     public static final double ROBOT_MASS = 63 * 0.453592; // 63lbs to kg
@@ -87,7 +87,7 @@ public final class Constants {
     public static final double I = 0;
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
-    public static final double SHOOTING_RPM = 1000;
+    public static final double SHOOTING_RPM = 1500;
   }
 
   // #endregion
@@ -99,7 +99,7 @@ public final class Constants {
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
 
-    public static final double BELT_RPM = 2600;
+    public static final double BELT_RPM = 3900;
     public static final double FLYWHEEL_RPM = 3000;
   }
 
@@ -126,16 +126,16 @@ public final class Constants {
       public static final double P = 0.05;
       public static final double I = 0;
       public static final double D = 0.003;
-      public static final int CURRENT_LIMIT = 20;
+      public static final int CURRENT_LIMIT = 15;
     }
 
-    public static final double MAX_DISTANCE = 4;
-    public static final double MAX_DISTANCE_RPM = 0;
-    public static final double MAX_DISTANCE_PITCH = 355;
-    public static final double MIN_DISTANCE = 2.1;
-    public static final double MIN_DISTANCE_RPM = 0;
-    public static final double MIN_DISTANCE_PITCH = 160;
-    public static final double SHOOTING_RPM = 5000;
+    public static final double MAX_DISTANCE = 4.8;
+    public static final double MAX_DISTANCE_RPM = 4660;
+    public static final double MAX_DISTANCE_PITCH = 340;
+    public static final double MIN_DISTANCE = 2;
+    public static final double MIN_DISTANCE_RPM = 3700; // 3630
+    public static final double MIN_DISTANCE_PITCH = 350;
+    public static final double SHOOTING_RPM = 4200;
 
     // Max yaw -> turret rotated fully left
     public static final double MIN_YAW = -155;

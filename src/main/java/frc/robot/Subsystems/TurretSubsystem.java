@@ -11,12 +11,12 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.TurretConstants;
 import frc.robot.Utilites.HelperFunctions;
+import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
 import frc.robot.Utilites.Tunable.TunableSparkMaxPid;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -33,13 +33,11 @@ public class TurretSubsystem extends SubsystemBase {
   SparkClosedLoopController pitchController;
   SparkClosedLoopController yawController;
 
-  // DoubleEntry flywheelSetpoint;
+  DoubleEntry flywheelSetpoint;
   DoubleEntry turretAngle;
   DoubleEntry turretPitch;
 
   double flywheelRPM = 0;
-
-  SlewRateLimiter speedFilter = new SlewRateLimiter(Double.MAX_VALUE, -1000, 0);
 
   // Turret moves 1.5 degrees for 1 degree of encoder motion
   double degreesPerEncoderRev = 360 * TurretConstants.Yaw.GEAR_RATIO;
@@ -67,7 +65,7 @@ public class TurretSubsystem extends SubsystemBase {
     flywheelConfig.smartCurrentLimit(TurretConstants.Flywheel.CURRENT_LIMIT);
     flyWheelMotor.configure(
         flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
+    flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
 
     pitchConfig.inverted(false).idleMode(IdleMode.kCoast);
     pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -75,7 +73,10 @@ public class TurretSubsystem extends SubsystemBase {
     pitchConfig.closedLoop.pid(
         TurretConstants.Hood.P, TurretConstants.Hood.I, TurretConstants.Hood.D);
     pitchConfig.smartCurrentLimit(TurretConstants.Hood.CURRENT_LIMIT);
-    pitchConfig.softLimit.forwardSoftLimit(355).reverseSoftLimit(150);
+    pitchConfig
+        .softLimit
+        .forwardSoftLimit(TurretConstants.MAX_DISTANCE_PITCH)
+        .reverseSoftLimit(TurretConstants.MIN_DISTANCE_PITCH);
     pitchConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
     pitchMotor.configure(
         pitchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -107,6 +108,7 @@ public class TurretSubsystem extends SubsystemBase {
     yawController.setSetpoint(turretAngle.get(), ControlType.kPosition);
     pitchController.setSetpoint(turretPitch.get(), ControlType.kPosition);
     flywheelController.setSetpoint(flywheelRPM, ControlType.kVelocity);
+    System.out.println("Flywheel: " + flywheelRPM + " Pitch: " + turretPitch);
   }
 
   public void setFlywheelRPM(double flywheelRPM) {
@@ -133,8 +135,15 @@ public class TurretSubsystem extends SubsystemBase {
             distance,
             TurretConstants.MIN_DISTANCE,
             TurretConstants.MAX_DISTANCE,
-            TurretConstants.MAX_DISTANCE_PITCH,
-            TurretConstants.MIN_DISTANCE_PITCH));
+            TurretConstants.MIN_DISTANCE_PITCH,
+            TurretConstants.MAX_DISTANCE_PITCH));
+    flywheelRPM =
+        HelperFunctions.map(
+            distance,
+            TurretConstants.MIN_DISTANCE,
+            TurretConstants.MAX_DISTANCE,
+            TurretConstants.MIN_DISTANCE_RPM,
+            TurretConstants.MAX_DISTANCE_RPM);
   }
 
   public void reset() {

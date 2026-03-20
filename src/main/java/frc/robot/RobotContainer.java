@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.TurretCommands.FixJam;
 import frc.robot.Commands.TurretCommands.ResetTurret;
 import frc.robot.Commands.TurretCommands.ShootFuel;
 import frc.robot.Subsystems.ElasticSubsystem;
@@ -179,6 +180,7 @@ public class RobotContainer {
 
     operatorXbox
         .rightTrigger(0.2)
+        .and(operatorXbox.a().negate())
         .whileTrue(new ShootFuel(turret, drivebase::getPose, hopper, feeder, lights))
         .whileFalse(new ResetTurret(turret, hopper, feeder));
 
@@ -189,6 +191,11 @@ public class RobotContainer {
                 () -> intake.setState(IntakeState.AGITATING_FUEL),
                 () -> intake.setState(IntakeState.NORMAL),
                 intake));
+
+    operatorXbox
+        .a()
+        .whileTrue(new FixJam(turret, hopper, feeder))
+        .onFalse(new ResetTurret(turret, hopper, feeder));
 
     // driverXbox.leftBumper().whileTrue(new ParallelCommandGroup(Commands.runOnce(() ->
     // hopper.run(), hopper), Commands.runOnce(() -> feeder.run(), feeder)));
