@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLED.ColorOrder;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
@@ -42,6 +43,7 @@ public class LightsSubsystem extends SubsystemBase {
     ledInstance = new AddressableLED(lightPort);
     bufferInstance = new AddressableLEDBuffer(lightCount);
     ledInstance.setLength(lightCount);
+    ledInstance.setColorOrder(ColorOrder.kBRG);
     ledInstance.start();
   }
 

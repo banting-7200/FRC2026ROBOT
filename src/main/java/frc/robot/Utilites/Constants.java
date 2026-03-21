@@ -11,12 +11,12 @@ public final class Constants {
   // #region Generic
   public static final int XBOX_PORT = 0;
   public static final int BUTTON_BOX_PORT = 1;
-  public static final int LIGHTS_AMOUNT = 120;
+  public static final int LIGHTS_AMOUNT = 40;
 
   public static final class DrivebaseConstants {
     public static final double ROBOT_MASS = 63 * 0.453592; // 63lbs to kg
     public static final double MAX_SPEED = Units.feetToMeters(14.5);
-    public static final double MAX_CREEP_SPEED = Units.feetToMeters(5);
+    public static final double MAX_CREEP_SPEED = Units.feetToMeters(2);
     public static final double MAX_ANGULAR_VELOCITY = 5.627209491911525; // radians per second
     public static final double MAX_CREEP_ANGULAR_VELOCITY = 3;
     public static final double CRAZY_SPIN_SPEED = Units.feetToMeters(3);
@@ -130,7 +130,7 @@ public final class Constants {
     }
 
     public static final double MAX_DISTANCE = 4.8;
-    public static final double MAX_DISTANCE_RPM = 4750;
+    public static final double MAX_DISTANCE_RPM = 5000;
     public static final double MAX_DISTANCE_PITCH = 270;
     public static final double MIN_DISTANCE = 2;
     public static final double MIN_DISTANCE_RPM = 3480; // 3630

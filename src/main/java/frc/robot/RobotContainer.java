@@ -121,7 +121,6 @@ public class RobotContainer {
 
     elasticSubsystem.putAutoChooser();
     configureBindings();
-    registerNamedCommands();
     drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
   }
 
@@ -209,6 +208,11 @@ public class RobotContainer {
     intake.run();
   }
 
+  public void autoPeriodic() {
+    turret.run();
+    intake.run();
+  }
+
   public void robotPeriodic() {
     setLights();
     lights.run();
@@ -272,15 +276,17 @@ public class RobotContainer {
           lights.requestLEDState(
               new LEDRequest(LEDState.BREATHE)
                   .withBlinkRate(4.5)
-                  .withPriority(3)
+                  .withPriority(-1)
                   .withColour(Color.kBlue));
         } else if (alliance.get() == Alliance.Red) {
           lights.requestLEDState(
               new LEDRequest(LEDState.BREATHE)
                   .withBlinkRate(4.5)
-                  .withPriority(3)
+                  .withPriority(-1)
                   .withColour(Color.kRed));
         }
+      } else {
+        lights.requestLEDState(new LEDRequest(LEDState.RAINBOW).withPriority(-1));
       }
     }
   }

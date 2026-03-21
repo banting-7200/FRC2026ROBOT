@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
     CameraServer.startAutomaticCapture();
 
     m_robotContainer = new RobotContainer();
-
+    m_robotContainer.registerNamedCommands();
     disabledTimer = new Timer();
 
     if (isSimulation()) {
@@ -83,7 +83,9 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    m_robotContainer.autoPeriodic();
+  }
 
   @Override
   public void teleopInit() {

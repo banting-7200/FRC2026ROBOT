@@ -113,7 +113,6 @@ public class ShootFuel extends Command {
     }
 
     turret.setTurretHubDistance(distanceToHub);
-    ;
     isAlignedWithFeeder = (Math.abs(desiredAngleInDegrees - (-90))) <= tolerance;
     if (isAlignedWithFeeder)
       lights.requestLEDState(

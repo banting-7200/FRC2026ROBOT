@@ -5,13 +5,25 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "UnderBottomTrenchToNeutral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BottomTrenchToFuel"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "PickupOutpostFuel"
+                  "pathName": "BottomFuelPickup"
                 }
               },
               {
@@ -26,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OutpostToShootingRange"
+            "pathName": "BottomBumpToZone"
           }
         },
         {
