@@ -36,6 +36,7 @@ public class LightsSubsystem extends SubsystemBase {
   private int rainbowFirstPixelHue = 0;
   private double lastReadTimestamp = Timer.getFPGATimestamp();
   private boolean lightsAreOn = false;
+  public Color fadedColor = new Color(0, 0, 0);
 
   public LightsSubsystem(int lightPort, int lightCount) {
     ledInstance = new AddressableLED(lightPort);
@@ -79,6 +80,8 @@ public class LightsSubsystem extends SubsystemBase {
       case RAINBOW:
         rainbow();
         break;
+      case BREATHE:
+        breathe(currentRequest.getBlinkRate(), currentRequest.getColour());
       default:
         break;
     }
@@ -116,6 +119,21 @@ public class LightsSubsystem extends SubsystemBase {
     }
     rainbowFirstPixelHue += 3;
     rainbowFirstPixelHue %= 180;
+    ledInstance.setData(bufferInstance);
+  }
+
+  private void breathe(double blinkRate, Color color) {
+    double now = Timer.getFPGATimestamp();
+    double rawSine = Math.sin(now * (2 * Math.PI / blinkRate));
+    double intensity = (rawSine + 1) / 2;
+    int red = (int) (color.red * 255 * intensity);
+    int green = (int) (color.green * 255 * intensity);
+    int blue = (int) (color.blue * 255 * intensity);
+    fadedColor = new Color(red, green, blue);
+
+    for (int x = 0; x < bufferInstance.getLength(); x++) {
+      bufferInstance.setLED(x, fadedColor);
+    }
     ledInstance.setData(bufferInstance);
   }
 

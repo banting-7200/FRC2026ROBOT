@@ -11,13 +11,10 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.TurretConstants;
 import frc.robot.Utilites.HelperFunctions;
-import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
-import frc.robot.Utilites.Tunable.TunableSparkMaxPid;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -33,11 +30,13 @@ public class TurretSubsystem extends SubsystemBase {
   SparkClosedLoopController pitchController;
   SparkClosedLoopController yawController;
 
-  DoubleEntry flywheelSetpoint;
-  DoubleEntry turretAngle;
-  DoubleEntry turretPitch;
+  //   DoubleEntry flywheelSetpoint;
+  //   DoubleEntry turretAngle;
+  //   DoubleEntry turretPitch;
 
   double flywheelRPM = 0;
+  double turretAngle;
+  double turretPitch;
 
   // Turret moves 1.5 degrees for 1 degree of encoder motion
   double degreesPerEncoderRev = 360 * TurretConstants.Yaw.GEAR_RATIO;
@@ -65,7 +64,7 @@ public class TurretSubsystem extends SubsystemBase {
     flywheelConfig.smartCurrentLimit(TurretConstants.Flywheel.CURRENT_LIMIT);
     flyWheelMotor.configure(
         flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
+    // flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
 
     pitchConfig.inverted(false).idleMode(IdleMode.kCoast);
     pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -80,9 +79,9 @@ public class TurretSubsystem extends SubsystemBase {
     pitchConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
     pitchMotor.configure(
         pitchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    turretPitch =
-        TunableSparkMaxPid.create(
-            "Turret Pitch", pitchMotor, pitchConfig, TurretConstants.MAX_DISTANCE_PITCH);
+    // turretPitch =
+    // TunableSparkMaxPid.create(
+    //     "Turret Pitch", pitchMotor, pitchConfig, TurretConstants.MIN_DISTANCE_PITCH);
 
     yawConfig.inverted(true).idleMode(IdleMode.kCoast);
     yawConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -101,14 +100,14 @@ public class TurretSubsystem extends SubsystemBase {
         .reverseSoftLimit(TurretConstants.MIN_YAW);
     yawConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
     yawMotor.configure(yawConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    turretAngle = TunableSparkMaxPid.create("Turret Angle", yawMotor, yawConfig, 0);
+    // turretAngle = TunableSparkMaxPid.create("Turret Angle", yawMotor, yawConfig, 0);
   }
 
   public void run() {
-    yawController.setSetpoint(turretAngle.get(), ControlType.kPosition);
-    pitchController.setSetpoint(turretPitch.get(), ControlType.kPosition);
+    yawController.setSetpoint(turretAngle, ControlType.kPosition);
+    pitchController.setSetpoint(turretPitch, ControlType.kPosition);
     flywheelController.setSetpoint(flywheelRPM, ControlType.kVelocity);
-    System.out.println("Flywheel: " + flywheelRPM + " Pitch: " + turretPitch);
+    // System.out.println("Flywheel: " + flywheelRPM + " Pitch: " + turretPitch);
   }
 
   public void setFlywheelRPM(double flywheelRPM) {
@@ -124,19 +123,19 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void setTurretAngle(double degrees) {
-    turretAngle.set(degrees);
+    turretAngle = degrees;
   }
 
   public void setTurretHubDistance(double distance) {
     // System.out.println("TurretAngle " + turretPitch.get() + " | DistanceToHub: " + distance);
-    if (distance > TurretConstants.MAX_DISTANCE || distance < TurretConstants.MIN_DISTANCE) return;
-    turretPitch.set(
+    // System.out.println("doing shit");
+    turretPitch =
         HelperFunctions.map(
             distance,
             TurretConstants.MIN_DISTANCE,
             TurretConstants.MAX_DISTANCE,
             TurretConstants.MIN_DISTANCE_PITCH,
-            TurretConstants.MAX_DISTANCE_PITCH));
+            TurretConstants.MAX_DISTANCE_PITCH);
     flywheelRPM =
         HelperFunctions.map(
             distance,
@@ -147,8 +146,8 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void reset() {
-    turretAngle.set(0);
-    turretPitch.set(TurretConstants.MAX_DISTANCE_PITCH);
+    turretAngle = 0;
+    turretPitch = TurretConstants.MAX_DISTANCE_PITCH;
     flywheelRPM = 0;
     flyWheelMotor.stopMotor();
   }

@@ -31,7 +31,8 @@ public class ShootFuel extends Command {
   Supplier<Pose2d> robotPose;
   Pose2d pose;
   double desiredAngle;
-  double tolerance = 1;
+  double tolerance = 50;
+  boolean isAlignedWithFeeder;
 
   public ShootFuel(
       TurretSubsystem turret,
@@ -58,52 +59,93 @@ public class ShootFuel extends Command {
             TurretConstants.TURRET_FORWARD_OFFSET, TurretConstants.TURRET_RIGHT_OFFSET);
     Transform2d robotToTurret = new Transform2d(turretOffset, new Rotation2d());
     Translation2d turretFieldPosition = pose.transformBy(robotToTurret).getTranslation();
-
-    Translation2d targetPosition = new Translation2d();
-    // Translation2d targetPosition = field.getTagPose(10).getTranslation();
+    Translation2d targetPosition = field.getBlueHubPose().getTranslation();
     Optional<Alliance> alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {
-      targetPosition =
-          (alliance.get() == Alliance.Blue)
-              ? field.getBlueHubPose().getTranslation()
-              : field.getRedHubPose().getTranslation();
-    } else {
-      System.out.println("NO ALLIANCE | NO SHOOTING");
+      if (field.isRobotInNeutralZone(pose)) {
+        if (field.isRobotInTopNeutralZone(pose)) {
+          targetPosition =
+              (alliance.get() == Alliance.Blue)
+                  ? field.getBlueTopPassingPose().getTranslation()
+                  : field.getRedTopPassingPose().getTranslation();
+        } else if (field.isRobotInBottomNeutralZone(pose)) {
+          targetPosition =
+              (alliance.get() == Alliance.Blue)
+                  ? field.getBlueBottomPassingPose().getTranslation()
+                  : field.getRedBottomPassingPose().getTranslation();
+        }
+      } else {
+        targetPosition =
+            (alliance.get() == Alliance.Blue)
+                ? field.getBlueHubPose().getTranslation()
+                : field.getRedHubPose().getTranslation();
+      }
     }
 
     Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+
     Double distanceToHub = turretToTargetVector.getNorm();
-    // System.out.println(distanceToHub);
     Rotation2d turretFieldAngle = turretToTargetVector.getAngle(); // Angle to HUB
     Rotation2d robotRelativeTurretAngle =
         turretFieldAngle.minus(pose.getRotation().plus(Rotation2d.fromDegrees(180)));
-
     double desiredAngleInDegrees = robotRelativeTurretAngle.getDegrees();
     desiredAngle = desiredAngleInDegrees;
     turret.setTurretAngle(desiredAngleInDegrees);
+
+    if (field.isRobotInNeutralZone(pose)) {
+      if (!field.isRobotInTopNeutralZone(pose) && !field.isRobotInBottomNeutralZone(pose)) {
+        lights.requestLEDState(
+            new LEDRequest(LEDState.BLINK)
+                .withBlinkRate(0.1)
+                .withColour(Color.kOrange)
+                .withPriority(0));
+        return;
+      } else {
+        if (distanceToHub > TurretConstants.MAX_DISTANCE
+            || distanceToHub < TurretConstants.MIN_DISTANCE) {
+          lights.requestLEDState(
+              new LEDRequest(LEDState.BLINK)
+                  .withBlinkRate(0.1)
+                  .withColour(Color.kOrange)
+                  .withPriority(0));
+          return;
+        }
+      }
+    }
+
     turret.setTurretHubDistance(distanceToHub);
-    // System.out.println(distance);
-    turret.setFlywheelRPM(TurretConstants.SHOOTING_RPM);
-    if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM) {
+    ;
+    isAlignedWithFeeder = (Math.abs(desiredAngleInDegrees - (-90))) <= tolerance;
+    if (isAlignedWithFeeder)
+      lights.requestLEDState(
+          new LEDRequest(LEDState.SOLID).withColour(Color.kBlue).withPriority(0));
+    if (field.isRobotInNeutralZone(pose)) {
       feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
       hopper.set(HopperConstants.SHOOTING_RPM);
     } else {
-      lights.requestLEDState(
-          new LEDRequest(LEDState.BLINK).withBlinkRate(0.1).withColour(Color.kRed).withPriority(1));
-      feeder.set(0, 0);
-      hopper.set(0);
+      if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM - 600) {
+        feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
+        hopper.set(HopperConstants.SHOOTING_RPM);
+      } else {
+        lights.requestLEDState(
+            new LEDRequest(LEDState.BLINK)
+                .withBlinkRate(0.1)
+                .withColour(Color.kRed)
+                .withPriority(1));
+        feeder.set(0, 0);
+        hopper.set(0);
+      }
     }
   }
 
   @Override
   public boolean isFinished() {
-    // return turret.getTurretAngle() >= desiredAngle - tolerance
-    //     && turret.getTurretAngle() <= desiredAngle + tolerance;
     return false;
   }
 
   @Override
   public void end(boolean interrupted) {
-    // System.out.println("AIMING DONE");
+    feeder.set(0, 0);
+    hopper.set(0);
+    turret.reset();
   }
 }

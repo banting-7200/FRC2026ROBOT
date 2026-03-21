@@ -41,4 +41,8 @@ public class HopperSubsystem extends SubsystemBase {
     hopperController.setSetpoint(this.hopperRPM, ControlType.kVelocity);
     // System.out.println(motor.getOutputCurrent() + " | " + motor.getEncoder().getVelocity());
   }
+
+  public double getCurrent() {
+    return motor.getOutputCurrent();
+  }
 }

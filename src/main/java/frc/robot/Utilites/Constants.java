@@ -69,7 +69,7 @@ public final class Constants {
       public static final double I = 0;
       public static final double D = 0;
       public static final double V = 0.0026;
-      public static final int CURRENT_LIMIT = 40;
+      public static final int CURRENT_LIMIT = 20;
     }
 
     public static final double INTAKE_POSITION = 59;
@@ -77,7 +77,7 @@ public final class Constants {
     public static final double NORMAL_POSITION = 140; // 160
 
     public static final double LOW_AGITATE_POSITION = 64;
-    public static final double HIGH_AGITATE_POSITION = 170;
+    public static final double HIGH_AGITATE_POSITION = 180;
 
     public static final double INTAKE_RPM = 0;
   }
@@ -87,7 +87,7 @@ public final class Constants {
     public static final double I = 0;
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
-    public static final double SHOOTING_RPM = 1500;
+    public static final double SHOOTING_RPM = 1000;
   }
 
   // #endregion
@@ -99,7 +99,7 @@ public final class Constants {
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
 
-    public static final double BELT_RPM = 3900;
+    public static final double BELT_RPM = 2600;
     public static final double FLYWHEEL_RPM = 3000;
   }
 
@@ -126,15 +126,15 @@ public final class Constants {
       public static final double P = 0.05;
       public static final double I = 0;
       public static final double D = 0.003;
-      public static final int CURRENT_LIMIT = 15;
+      public static final int CURRENT_LIMIT = 10;
     }
 
     public static final double MAX_DISTANCE = 4.8;
-    public static final double MAX_DISTANCE_RPM = 4660;
-    public static final double MAX_DISTANCE_PITCH = 340;
+    public static final double MAX_DISTANCE_RPM = 4750;
+    public static final double MAX_DISTANCE_PITCH = 270;
     public static final double MIN_DISTANCE = 2;
-    public static final double MIN_DISTANCE_RPM = 3700; // 3630
-    public static final double MIN_DISTANCE_PITCH = 350;
+    public static final double MIN_DISTANCE_RPM = 3480; // 3630
+    public static final double MIN_DISTANCE_PITCH = 300;
     public static final double SHOOTING_RPM = 4200;
 
     // Max yaw -> turret rotated fully left

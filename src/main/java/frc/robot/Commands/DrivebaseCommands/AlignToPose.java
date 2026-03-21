@@ -96,7 +96,7 @@ public class AlignToPose extends Command {
     Pose2d robotPose = drive.getPose();
     Pose2d targetPose = targetPoseSupplier.get();
     if (targetPose == null) {
-      System.out.println("TARGET POSE NULL");
+      // System.out.println("TARGET POSE NULL");
       return true;
     }
 

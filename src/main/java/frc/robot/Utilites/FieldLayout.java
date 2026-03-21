@@ -48,8 +48,32 @@ public class FieldLayout {
     return new Pose2d(11.9, 4.05, new Rotation2d(0)); // Meters
   }
 
+  public Pose2d getBlueTopPassingPose() {
+    return new Pose2d(2.6, 6.2, new Rotation2d(0));
+  }
+
+  public Pose2d getBlueBottomPassingPose() {
+    return new Pose2d(2.6, 1.6, new Rotation2d(0));
+  }
+
+  public Pose2d getRedTopPassingPose() {
+    return new Pose2d(14.5, 6.2, new Rotation2d(0));
+  }
+
+  public Pose2d getRedBottomPassingPose() {
+    return new Pose2d(14.5, 1.6, new Rotation2d(0));
+  }
+
   public boolean isRobotInNeutralZone(Pose2d robotPose) {
     return robotPose.getX() > 5.8 && robotPose.getX() < 10.8; // Meters
+  }
+
+  public boolean isRobotInTopNeutralZone(Pose2d robotPose) {
+    return (robotPose.getY() > 4.8);
+  }
+
+  public boolean isRobotInBottomNeutralZone(Pose2d robotPose) {
+    return robotPose.getY() < 3.1;
   }
 
   public boolean isRobotNearTrench(Pose2d robotPose) {

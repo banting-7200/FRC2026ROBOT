@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.VecBuilder;
@@ -118,12 +119,10 @@ public class RobotContainer {
     turret = new TurretSubsystem();
     hopper = new HopperSubsystem();
 
-    targetPose = field.getPoseInFrontOfTag(26, 1.5);
     elasticSubsystem.putAutoChooser();
     configureBindings();
-    DriverStation.silenceJoystickConnectionWarning(true);
+    registerNamedCommands();
     drivebase.setVisionStdDevs(VecBuilder.fill(1.5, 1.5, 9999));
-    // drivebase.updateBotPose(new Pose2d(2, 3, new Rotation2d(0)));
   }
 
   private DoubleSupplier getAdjustedRightX() {
@@ -214,6 +213,15 @@ public class RobotContainer {
     setLights();
     lights.run();
     updateTelemetry();
+    updateDashboard();
+  }
+
+  public void updateDashboard() {
+    ElasticSubsystem.putColor("Lights", lights.getLEDRequest().getColour());
+    ElasticSubsystem.putNumber("Hopper Current", hopper.getCurrent());
+    ElasticSubsystem.putNumber("Robot Current", PDH.getTotalCurrent());
+    ElasticSubsystem.putNumber("Robot Voltage", PDH.getVoltage());
+    ElasticSubsystem.putNumber("Match Time", DriverStation.getMatchTime());
   }
 
   // #endregion
@@ -244,9 +252,9 @@ public class RobotContainer {
     if (estimate.tagCount == 0) return;
     if (Math.abs(drivebase.getRobotVelocity().omegaRadiansPerSecond) > Math.toRadians(720)) return;
 
-    double distanceToCurrent =
-        drivebase.getPose().getTranslation().getDistance(estimate.pose.getTranslation());
-    if (distanceToCurrent > 2) return;
+    // double distanceToCurrent =
+    //     drivebase.getPose().getTranslation().getDistance(estimate.pose.getTranslation());
+    // if (distanceToCurrent > 2) return;
 
     drivebase.updateBotPose(estimate.pose, estimate.timestampSeconds);
   }
@@ -255,19 +263,31 @@ public class RobotContainer {
   // #region Generic
 
   public void setLights() {
+
     lights.requestLEDState(new LEDRequest(LEDState.SOLID).withColour(Color.kGreen).withPriority(3));
-    if (DriverStation.isDisabled())
-      lights.requestLEDState(new LEDRequest(LEDState.RAINBOW).withPriority(-1));
+    if (DriverStation.isDisabled()) {
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+      if (alliance.isPresent()) {
+        if (alliance.get() == Alliance.Blue) {
+          lights.requestLEDState(
+              new LEDRequest(LEDState.BREATHE)
+                  .withBlinkRate(4.5)
+                  .withPriority(3)
+                  .withColour(Color.kBlue));
+        } else if (alliance.get() == Alliance.Red) {
+          lights.requestLEDState(
+              new LEDRequest(LEDState.BREATHE)
+                  .withBlinkRate(4.5)
+                  .withPriority(3)
+                  .withColour(Color.kRed));
+        }
+      }
+    }
   }
 
-  //   public Command getAutonomousCommand() {
-  //     switch(elasticSubsystem.getSelectedAuto()){
-  //         case "DriveForward":
-  //         return new DriveForward(drivebase, drivebase::getPose, lights);
-  //     }
-
-  //       return drivebase.getAutonomousCommand(elasticSubsystem.getSelectedAuto());
-  //   }
+  public Command getAutonomousCommand() {
+    return drivebase.getAutonomousCommand(elasticSubsystem.getSelectedAuto());
+  }
 
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
@@ -283,4 +303,23 @@ public class RobotContainer {
   }
 
   // #endregion
+
+  public void registerNamedCommands() {
+    NamedCommands.registerCommand(
+        "ShootFuel",
+        new ShootFuel(turret, drivebase::getPose, hopper, feeder, lights).withTimeout(8));
+    NamedCommands.registerCommand(
+        "IntakeFuel",
+        new StartEndCommand(
+            () -> intake.setState(IntakeState.INTAKING_FUEL),
+            () -> intake.setState(IntakeState.NORMAL),
+            intake));
+    NamedCommands.registerCommand(
+        "AgitateFuel",
+        new StartEndCommand(
+                () -> intake.setState(IntakeState.AGITATING_FUEL),
+                () -> intake.setState(IntakeState.NORMAL),
+                intake)
+            .withTimeout(8));
+  }
 }

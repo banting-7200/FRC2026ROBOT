@@ -8,7 +8,8 @@ public class LEDRequest {
     BLINK,
     SOLID,
     OFF,
-    RAINBOW;
+    RAINBOW,
+    BREATHE;
   };
 
   private LEDState state;

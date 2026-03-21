@@ -23,9 +23,9 @@ public class FixJam extends Command {
 
   @Override
   public void execute() {
-    turret.setFlywheelRPM(-500);
-    hopper.set(-500);
-    feeder.set(-500, -500);
+    turret.setFlywheelRPM(-800);
+    hopper.set(-800);
+    feeder.set(-800, -800);
   }
 
   @Override
@@ -34,5 +34,9 @@ public class FixJam extends Command {
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    turret.setFlywheelRPM(0);
+    hopper.set(0);
+    feeder.set(0, 0);
+  }
 }

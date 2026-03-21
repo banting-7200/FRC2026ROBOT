@@ -35,9 +35,8 @@ public class ElasticSubsystem extends SubsystemBase {
 
   public void putAutoChooser() {
     autoChooser.setDefaultOption("Nothing", "Nothing");
-    autoChooser.addOption("Move left", "Move left");
-    autoChooser.addOption("Move right", "Move right");
-    autoChooser.addOption("Tag26_1.5m", "Tag26_1.5m");
+    autoChooser.addOption("MidToTop", "MidToTop");
+    autoChooser.addOption("OnlyOutpost", "OnlyOutpost");
     SmartDashboard.putData("Auton Selector", autoChooser);
   }
 
