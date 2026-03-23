@@ -194,18 +194,12 @@ public class RobotContainer {
         .a()
         .whileTrue(new FixJam(turret, hopper, feeder))
         .onFalse(new ResetTurret(turret, hopper, feeder));
-
-    // driverXbox.leftBumper().whileTrue(new ParallelCommandGroup(Commands.runOnce(() ->
-    // hopper.run(), hopper), Commands.runOnce(() -> feeder.run(), feeder)));
-    // #endregion
-    // drivebase.updateBotPose(new Pose2d(2, 4, new Rotation2d(0)));
-    // turret.setDefaultCommand(new ShootFuel(turret, drivebase::getPose));
-    // driverXbox.b().onTrue(new ShootFuel(turret, drivebase::getPose));
   }
 
   public void enabledPeriodic() {
     turret.run();
     intake.run();
+    turret.setFlywheelRPM(500);
   }
 
   public void autoPeriodic() {

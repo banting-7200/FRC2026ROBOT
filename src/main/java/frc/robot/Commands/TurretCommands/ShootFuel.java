@@ -89,7 +89,7 @@ public class ShootFuel extends Command {
         turretFieldAngle.minus(pose.getRotation().plus(Rotation2d.fromDegrees(180)));
     double desiredAngleInDegrees = robotRelativeTurretAngle.getDegrees();
     desiredAngle = desiredAngleInDegrees;
-    turret.setTurretAngle(desiredAngleInDegrees);
+    // turret.setTurretAngle(desiredAngleInDegrees);
 
     if (field.isRobotInNeutralZone(pose)) {
       if (!field.isRobotInTopNeutralZone(pose) && !field.isRobotInBottomNeutralZone(pose)) {
@@ -113,7 +113,7 @@ public class ShootFuel extends Command {
     }
 
     turret.setTurretHubDistance(distanceToHub);
-    isAlignedWithFeeder = (Math.abs(desiredAngleInDegrees - (-90))) <= tolerance;
+    isAlignedWithFeeder = false;
     if (isAlignedWithFeeder)
       lights.requestLEDState(
           new LEDRequest(LEDState.SOLID).withColour(Color.kBlue).withPriority(0));

@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "UnderBottomTrenchToNeutral"
+            "pathName": "UnderTopTrench"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BottomTrenchToFuel"
+            "pathName": "TopTrenchToFuel"
           }
         },
         {
@@ -23,7 +23,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BottomFuelPickup"
+                  "pathName": "PickupTopFuel"
                 }
               },
               {
@@ -38,13 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BottomBumpToZone"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "FromBottomBumpPointHub"
+            "pathName": "TopBumpToZone"
           }
         },
         {

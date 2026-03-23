@@ -19,15 +19,15 @@ import frc.robot.Utilites.HelperFunctions;
 public class TurretSubsystem extends SubsystemBase {
 
   SparkFlex flyWheelMotor; // Vortex
-  SparkMax pitchMotor; // Neo 550
+  // SparkMax pitchMotor; // Neo 550
   SparkMax yawMotor; // Neo 550
 
   SparkFlexConfig flywheelConfig;
-  SparkMaxConfig pitchConfig;
+  // SparkMaxConfig pitchConfig;
   SparkMaxConfig yawConfig;
 
   SparkClosedLoopController flywheelController;
-  SparkClosedLoopController pitchController;
+  // SparkClosedLoopController pitchController;
   SparkClosedLoopController yawController;
 
   //   DoubleEntry flywheelSetpoint;
@@ -43,15 +43,15 @@ public class TurretSubsystem extends SubsystemBase {
 
   public TurretSubsystem() { // Yaw
     flyWheelMotor = new SparkFlex(Constants.CANIds.TURRET_FLYWHEEL_ID, MotorType.kBrushless);
-    pitchMotor = new SparkMax(Constants.CANIds.TURRET_HOOD_ID, MotorType.kBrushless);
+    // pitchMotor = new SparkMax(Constants.CANIds.TURRET_HOOD_ID, MotorType.kBrushless);
     yawMotor = new SparkMax(Constants.CANIds.TURRET_YAW_ID, MotorType.kBrushless);
 
     flywheelController = flyWheelMotor.getClosedLoopController();
-    pitchController = pitchMotor.getClosedLoopController();
+    // pitchController = pitchMotor.getClosedLoopController();
     yawController = yawMotor.getClosedLoopController();
 
     flywheelConfig = new SparkFlexConfig();
-    pitchConfig = new SparkMaxConfig();
+    // pitchConfig = new SparkMaxConfig();
     yawConfig = new SparkMaxConfig();
 
     flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
@@ -66,19 +66,19 @@ public class TurretSubsystem extends SubsystemBase {
         flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     // flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
 
-    pitchConfig.inverted(false).idleMode(IdleMode.kCoast);
-    pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    pitchConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
-    pitchConfig.closedLoop.pid(
-        TurretConstants.Hood.P, TurretConstants.Hood.I, TurretConstants.Hood.D);
-    pitchConfig.smartCurrentLimit(TurretConstants.Hood.CURRENT_LIMIT);
-    pitchConfig
-        .softLimit
-        .forwardSoftLimit(TurretConstants.MAX_DISTANCE_PITCH)
-        .reverseSoftLimit(TurretConstants.MIN_DISTANCE_PITCH);
-    pitchConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
-    pitchMotor.configure(
-        pitchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // pitchConfig.inverted(false).idleMode(IdleMode.kCoast);
+    // pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+    // pitchConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
+    // pitchConfig.closedLoop.pid(
+    //     TurretConstants.Hood.P, TurretConstants.Hood.I, TurretConstants.Hood.D);
+    // pitchConfig.smartCurrentLimit(TurretConstants.Hood.CURRENT_LIMIT);
+    // pitchConfig
+    //     .softLimit
+    //     .forwardSoftLimit(TurretConstants.MAX_DISTANCE_PITCH)
+    //     .reverseSoftLimit(TurretConstants.MIN_DISTANCE_PITCH);
+    // pitchConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
+    // pitchMotor.configure(
+    //     pitchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     // turretPitch =
     // TunableSparkMaxPid.create(
     //     "Turret Pitch", pitchMotor, pitchConfig, TurretConstants.MIN_DISTANCE_PITCH);
@@ -104,8 +104,8 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    yawController.setSetpoint(turretAngle, ControlType.kPosition);
-    pitchController.setSetpoint(turretPitch, ControlType.kPosition);
+    // yawController.setSetpoint(turretAngle, ControlType.kPosition);
+    // pitchController.setSetpoint(turretPitch, ControlType.kPosition);
     flywheelController.setSetpoint(flywheelRPM, ControlType.kVelocity);
     // System.out.println("Flywheel: " + flywheelRPM + " Pitch: " + turretPitch);
   }
