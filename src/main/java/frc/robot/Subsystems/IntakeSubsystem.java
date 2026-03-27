@@ -38,7 +38,7 @@ public class IntakeSubsystem extends SubsystemBase {
   double agitatingSpeedFactor = 7;
   // DoubleEntry pivotAngle;
   DoubleEntry intakeRPM;
-  double pivotAngle;
+  double pivotAngle = IntakeConstants.NORMAL_POSITION;
 
   public IntakeSubsystem() {
     intakeMotor = new SparkMax(CANIds.INTAKE_ID, MotorType.kBrushless);
@@ -68,7 +68,7 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.inverted(IntakeConstants.Pivot.INVERSION).idleMode(IdleMode.kCoast);
     pivotConfig.smartCurrentLimit(IntakeConstants.Pivot.CURRENT_LIMIT);
     pivotConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    pivotConfig.absoluteEncoder.inverted(true).zeroOffset(0.7);
+    pivotConfig.absoluteEncoder.inverted(true).zeroOffset(0.3);
     pivotConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
     pivotConfig.closedLoop.pid(
         IntakeConstants.Pivot.P, IntakeConstants.Pivot.I, IntakeConstants.Pivot.D);
@@ -127,6 +127,12 @@ public class IntakeSubsystem extends SubsystemBase {
     if (isAgitating) agitate();
     pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
     intakeController.setSetpoint(intakeRPM.get(), ControlType.kVelocity);
+
+    System.out.println(
+        "Going to: "
+            + pivotAngle
+            + " Currently at: "
+            + pivotMotor.getAbsoluteEncoder().getPosition());
   }
 
   public void agitate() {

@@ -1,9 +1,11 @@
 package frc.robot.Commands.TurretCommands;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
@@ -11,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
 import frc.robot.Subsystems.LightsSubsystem;
+import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Utilites.Constants.FeederConstants;
 import frc.robot.Utilites.Constants.HopperConstants;
@@ -19,33 +22,40 @@ import frc.robot.Utilites.FieldLayout;
 import frc.robot.Utilites.LEDRequest;
 import frc.robot.Utilites.LEDRequest.LEDState;
 import java.util.Optional;
-import java.util.function.Supplier;
 
+// This code was commented and cleaned by AI, code was inspired by:
+// https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/main/src/main/java/org/littletonrobotics/frc2026/subsystems/launcher/LaunchCalculator.java
+// Had no time to figure it out myself so I just copied this team above :(
 public class ShootFuel extends Command {
 
-  HopperSubsystem hopper;
-  FeederSubsystem feeder;
-  TurretSubsystem turret;
-  LightsSubsystem lights;
-  FieldLayout field = new FieldLayout();
-  Supplier<Pose2d> robotPose;
-  Pose2d pose;
-  double desiredAngle;
-  double tolerance = 50;
-  boolean isAlignedWithFeeder;
+  private final HopperSubsystem hopper;
+  private final FeederSubsystem feeder;
+  private final TurretSubsystem turret;
+  private final LightsSubsystem lights;
+  private final SwerveSubsystem swerve;
+
+  private final FieldLayout field = new FieldLayout();
+  private final LinearFilter turretAngleFilter = LinearFilter.movingAverage(5);
+
+  // Interpolation Maps
+  private final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
+  private final InterpolatingDoubleTreeMap hoodMap = new InterpolatingDoubleTreeMap();
+  private final InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
 
   public ShootFuel(
       TurretSubsystem turret,
-      Supplier<Pose2d> robotPose,
+      SwerveSubsystem swerve,
       HopperSubsystem hopper,
       FeederSubsystem feeder,
       LightsSubsystem lights) {
     this.turret = turret;
-    this.robotPose = robotPose;
+    this.swerve = swerve;
     this.hopper = hopper;
     this.feeder = feeder;
     this.lights = lights;
+
     addRequirements(turret, hopper, feeder);
+    setupMaps();
   }
 
   @Override
@@ -53,87 +63,125 @@ public class ShootFuel extends Command {
 
   @Override
   public void execute() {
-    pose = robotPose.get();
+
+    Pose2d robotPose = swerve.getPose();
+    var robotVelocity = swerve.getRobotVelocity();
+
     Translation2d turretOffset =
         new Translation2d(
             TurretConstants.TURRET_FORWARD_OFFSET, TurretConstants.TURRET_RIGHT_OFFSET);
-    Transform2d robotToTurret = new Transform2d(turretOffset, new Rotation2d());
-    Translation2d turretFieldPosition = pose.transformBy(robotToTurret).getTranslation();
-    Translation2d targetPosition = field.getBlueHubPose().getTranslation();
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-    if (alliance.isPresent()) {
-      if (field.isRobotInNeutralZone(pose)) {
-        if (field.isRobotInTopNeutralZone(pose)) {
-          targetPosition =
-              (alliance.get() == Alliance.Blue)
-                  ? field.getBlueTopPassingPose().getTranslation()
-                  : field.getRedTopPassingPose().getTranslation();
-        } else if (field.isRobotInBottomNeutralZone(pose)) {
-          targetPosition =
-              (alliance.get() == Alliance.Blue)
-                  ? field.getBlueBottomPassingPose().getTranslation()
-                  : field.getRedBottomPassingPose().getTranslation();
-        }
-      } else {
-        targetPosition =
-            (alliance.get() == Alliance.Blue)
-                ? field.getBlueHubPose().getTranslation()
-                : field.getRedHubPose().getTranslation();
-      }
-    }
+    Translation2d turretFieldPos =
+        robotPose.transformBy(new Transform2d(turretOffset, new Rotation2d())).getTranslation();
 
-    Translation2d turretToTargetVector = targetPosition.minus(turretFieldPosition); // CCW+
-    Double distanceToHub = turretToTargetVector.getNorm();
-    Rotation2d turretFieldAngle = turretToTargetVector.getAngle(); // Angle to HUB
-    Rotation2d robotRelativeTurretAngle =
-        turretFieldAngle.minus(pose.getRotation().plus(Rotation2d.fromDegrees(180)));
-    double desiredAngleInDegrees = robotRelativeTurretAngle.getDegrees();
-    desiredAngle = desiredAngleInDegrees;
-    // turret.setTurretAngle(desiredAngleInDegrees);
+    Translation2d targetPosition = getTargetBasedOnAlliance(robotPose);
 
-    if (field.isRobotInNeutralZone(pose)) {
-      if (!field.isRobotInTopNeutralZone(pose) && !field.isRobotInBottomNeutralZone(pose)) {
-        lights.requestLEDState(
-            new LEDRequest(LEDState.BLINK)
-                .withBlinkRate(0.1)
-                .withColour(Color.kOrange)
-                .withPriority(0));
-        return;
-      } else {
-        if (distanceToHub > TurretConstants.MAX_DISTANCE
-            || distanceToHub < TurretConstants.MIN_DISTANCE) {
-          lights.requestLEDState(
-              new LEDRequest(LEDState.BLINK)
-                  .withBlinkRate(0.1)
-                  .withColour(Color.kOrange)
-                  .withPriority(0));
-          return;
-        }
-      }
-    }
+    double distanceToTarget = turretFieldPos.getDistance(targetPosition);
+    double timeOfFlight = tofMap.get(distanceToTarget);
 
-    turret.setTurretHubDistance(distanceToHub);
-    isAlignedWithFeeder = false;
-    if (isAlignedWithFeeder)
+    Translation2d virtualTarget =
+        new Translation2d(
+            targetPosition.getX() - (robotVelocity.vxMetersPerSecond * timeOfFlight),
+            targetPosition.getY() - (robotVelocity.vyMetersPerSecond * timeOfFlight));
+
+    double virtualDistance = virtualTarget.getDistance(turretFieldPos);
+
+    double targetRPM = flywheelMap.get(virtualDistance);
+    double targetHoodAngle = hoodMap.get(virtualDistance);
+
+    Rotation2d fieldAngleToTarget = virtualTarget.minus(turretFieldPos).getAngle();
+    Rotation2d robotRelativeAngle =
+        fieldAngleToTarget.minus(robotPose.getRotation().plus(Rotation2d.fromDegrees(180)));
+    double filteredAngleDegrees = turretAngleFilter.calculate(robotRelativeAngle.getDegrees());
+
+    turret.setTurretAngle(filteredAngleDegrees);
+    turret.setFlywheelRPM(targetRPM);
+    turret.setHoodAngle(targetHoodAngle);
+
+    handleFeederAndLights(robotPose, virtualDistance);
+  }
+
+  private void handleFeederAndLights(Pose2d robotPose, double distance) {
+    boolean inNeutralZone = field.isRobotInNeutralZone(robotPose);
+    boolean validZone =
+        field.isRobotInTopNeutralZone(robotPose) || field.isRobotInBottomNeutralZone(robotPose);
+
+    // if in hub slot in neutral field
+    if (inNeutralZone && !validZone) {
       lights.requestLEDState(
-          new LEDRequest(LEDState.SOLID).withColour(Color.kBlue).withPriority(0));
-    if (field.isRobotInNeutralZone(pose)) {
+          new LEDRequest(LEDState.BLINK).withBlinkRate(0.1).withColour(Color.kOrange));
+      return;
+    }
+    // if in neutral zone
+    if (inNeutralZone) {
+      lights.requestLEDState(
+          new LEDRequest(LEDState.BLINK).withBlinkRate(0.1).withColour(Color.kBlue));
+      return;
+    }
+
+    // Check if both flywheel and turret are ready
+    if (inNeutralZone || turret.getFlywheelRPM() > 500) {
+      lights.requestLEDState(
+          new LEDRequest(LEDState.SOLID).withColour(Color.kPurple).withPriority(1));
       feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
       hopper.set(HopperConstants.SHOOTING_RPM);
     } else {
-      if (turret.getFlywheelRPM() > TurretConstants.SHOOTING_RPM - 600) {
-        feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
-        hopper.set(HopperConstants.SHOOTING_RPM);
-      } else {
-        lights.requestLEDState(
-            new LEDRequest(LEDState.BLINK)
-                .withBlinkRate(0.1)
-                .withColour(Color.kRed)
-                .withPriority(1));
-        feeder.set(0, 0);
-        hopper.set(0);
+      lights.requestLEDState(
+          new LEDRequest(LEDState.BLINK)
+              .withBlinkRate(0.05)
+              .withColour(Color.kRed)
+              .withPriority(1));
+      feeder.set(0, 0);
+      hopper.set(0);
+    }
+  }
+
+  private Translation2d getTargetBasedOnAlliance(Pose2d robotPose) {
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    boolean isBlue = alliance.isEmpty() || alliance.get() == Alliance.Blue;
+
+    if (field.isRobotInNeutralZone(robotPose)) {
+      if (field.isRobotInTopNeutralZone(robotPose)) {
+        return isBlue
+            ? field.getBlueTopPassingPose().getTranslation()
+            : field.getRedTopPassingPose().getTranslation();
+      } else if (field.isRobotInBottomNeutralZone(robotPose)) {
+        return isBlue
+            ? field.getBlueBottomPassingPose().getTranslation()
+            : field.getRedBottomPassingPose().getTranslation();
       }
     }
+    return isBlue
+        ? field.getBlueHubPose().getTranslation()
+        : field.getRedHubPose().getTranslation();
+  }
+
+  public void setupMaps() {
+    // Distance (m) -> RPM
+    flywheelMap.put(2.27, 3450.);
+    flywheelMap.put(2.59, 3600.);
+    flywheelMap.put(2.97, 3800.);
+    flywheelMap.put(3.37, 4000.);
+    flywheelMap.put(3.76, 4050.);
+    flywheelMap.put(4.16, 4100.);
+    flywheelMap.put(4.5, 4200.);
+
+    // Distance (m) -> Hood Angle (Degrees)
+    hoodMap.put(2.27, 325.);
+    hoodMap.put(2.59, 322.);
+    hoodMap.put(2.97, 319.);
+    hoodMap.put(3.37, 290.);
+    hoodMap.put(3.76, 287.);
+    hoodMap.put(4.16, 285.);
+    hoodMap.put(4.5, 283.);
+
+    // Distance (m) -> Time of Flight (seconds)
+    tofMap.put(2.27, 1.16);
+    tofMap.put(2.59, 1.12);
+    tofMap.put(2.97, 1.13);
+    tofMap.put(3.37, 1.13);
+    tofMap.put(3.76, 1.19);
+    tofMap.put(4.16, 1.21);
+    tofMap.put(4.5, 1.35);
   }
 
   @Override

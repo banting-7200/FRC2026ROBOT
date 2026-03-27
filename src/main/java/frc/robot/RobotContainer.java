@@ -179,7 +179,7 @@ public class RobotContainer {
     operatorXbox
         .rightTrigger(0.2)
         .and(operatorXbox.a().negate())
-        .whileTrue(new ShootFuel(turret, drivebase::getPose, hopper, feeder, lights))
+        .whileTrue(new ShootFuel(turret, drivebase, hopper, feeder, lights))
         .whileFalse(new ResetTurret(turret, hopper, feeder));
 
     operatorXbox
@@ -199,7 +199,6 @@ public class RobotContainer {
   public void enabledPeriodic() {
     turret.run();
     intake.run();
-    turret.setFlywheelRPM(500);
   }
 
   public void autoPeriodic() {
@@ -235,8 +234,8 @@ public class RobotContainer {
         "limelight-right", gyroAngle.getDegrees(), angularVelocity, 0, 0, 0, 0);
 
     try {
-      processLimelightUpdate("limelight-left");
-      //  processLimelightUpdate("limelight-right");
+      processLimelightUpdate("limelight-left"); // TODO change
+      processLimelightUpdate("limelight-right");
     } catch (NullPointerException e) {
       System.out.println("NO LL DATA");
     }
@@ -306,8 +305,7 @@ public class RobotContainer {
 
   public void registerNamedCommands() {
     NamedCommands.registerCommand(
-        "ShootFuel",
-        new ShootFuel(turret, drivebase::getPose, hopper, feeder, lights).withTimeout(8));
+        "ShootFuel", new ShootFuel(turret, drivebase, hopper, feeder, lights).withTimeout(8));
     NamedCommands.registerCommand(
         "IntakeFuel",
         new StartEndCommand(

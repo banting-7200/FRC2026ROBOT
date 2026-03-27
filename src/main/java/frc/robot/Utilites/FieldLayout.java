@@ -41,11 +41,11 @@ public class FieldLayout {
   }
 
   public Pose2d getBlueHubPose() {
-    return new Pose2d(4.62, 4.05, new Rotation2d(0)); // Meters
+    return new Pose2d(4.62, 4.5, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getRedHubPose() {
-    return new Pose2d(11.9, 4.05, new Rotation2d(0)); // Meters
+    return new Pose2d(11.9, 4.5, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getBlueTopPassingPose() {

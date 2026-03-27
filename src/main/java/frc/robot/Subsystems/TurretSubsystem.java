@@ -2,7 +2,6 @@ package frc.robot.Subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
@@ -11,144 +10,171 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants;
 import frc.robot.Utilites.Constants.TurretConstants;
-import frc.robot.Utilites.HelperFunctions;
+import frc.robot.Utilites.Tunable.TunableSparkFlexPid;
+import frc.robot.Utilites.Tunable.TunableSparkMaxPid;
 
 public class TurretSubsystem extends SubsystemBase {
 
-  SparkFlex flyWheelMotor; // Vortex
-  // SparkMax pitchMotor; // Neo 550
-  SparkMax yawMotor; // Neo 550
+  private final SparkFlex flywheelLeader;
+  private final SparkFlex flywheelFollower;
+  private final SparkMax hoodMotor;
+  private final SparkMax yawMotor;
 
-  SparkFlexConfig flywheelConfig;
-  // SparkMaxConfig pitchConfig;
-  SparkMaxConfig yawConfig;
+  private final SparkClosedLoopController flywheelController;
+  private final SparkClosedLoopController hoodController;
+  private final SparkClosedLoopController yawController;
 
-  SparkClosedLoopController flywheelController;
-  // SparkClosedLoopController pitchController;
-  SparkClosedLoopController yawController;
+  private double flywheelSetpointRPM = 0;
+  private double yawSetpointDegrees = 0;
+  private double hoodSetpointDegrees = 0;
 
-  //   DoubleEntry flywheelSetpoint;
-  //   DoubleEntry turretAngle;
-  //   DoubleEntry turretPitch;
+  DoubleEntry turretFlywheelSetpoint;
+  DoubleEntry turretYawSetpoint;
+  DoubleEntry turretHoodSetpoint;
 
-  double flywheelRPM = 0;
-  double turretAngle;
-  double turretPitch;
+  public TurretSubsystem() {
+    flywheelLeader = new SparkFlex(Constants.CANIds.TURRET_FLYWHEEL_ID, MotorType.kBrushless);
+    flywheelFollower =
+        new SparkFlex(Constants.CANIds.TURRET_FLYWHEEL_FOLLOWER_ID, MotorType.kBrushless);
 
-  // Turret moves 1.5 degrees for 1 degree of encoder motion
-  double degreesPerEncoderRev = 360 * TurretConstants.Yaw.GEAR_RATIO;
-
-  public TurretSubsystem() { // Yaw
-    flyWheelMotor = new SparkFlex(Constants.CANIds.TURRET_FLYWHEEL_ID, MotorType.kBrushless);
-    // pitchMotor = new SparkMax(Constants.CANIds.TURRET_HOOD_ID, MotorType.kBrushless);
+    hoodMotor = new SparkMax(Constants.CANIds.TURRET_HOOD_ID, MotorType.kBrushless);
     yawMotor = new SparkMax(Constants.CANIds.TURRET_YAW_ID, MotorType.kBrushless);
 
-    flywheelController = flyWheelMotor.getClosedLoopController();
-    // pitchController = pitchMotor.getClosedLoopController();
+    flywheelController = flywheelLeader.getClosedLoopController();
+    hoodController = hoodMotor.getClosedLoopController();
     yawController = yawMotor.getClosedLoopController();
 
-    flywheelConfig = new SparkFlexConfig();
-    // pitchConfig = new SparkMaxConfig();
-    yawConfig = new SparkMaxConfig();
+    configureFlywheel();
+    configureHood();
+    configureYaw();
+  }
 
-    flywheelConfig.inverted(true).idleMode(IdleMode.kCoast);
-    flywheelConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    flywheelConfig
+  private void configureFlywheel() {
+    SparkFlexConfig leaderConfig = new SparkFlexConfig();
+    leaderConfig.inverted(true).idleMode(IdleMode.kCoast);
+    leaderConfig.smartCurrentLimit(TurretConstants.Flywheel.CURRENT_LIMIT);
+
+    leaderConfig
         .closedLoop
-        .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D)
-        .feedForward
-        .kV(TurretConstants.Flywheel.V);
-    flywheelConfig.smartCurrentLimit(TurretConstants.Flywheel.CURRENT_LIMIT);
-    flyWheelMotor.configure(
-        flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // flywheelSetpoint = TunableSparkFlexPid.create("Flywheel", flyWheelMotor, flywheelConfig, 0);
+        .feedbackSensor(com.revrobotics.spark.FeedbackSensor.kPrimaryEncoder)
+        .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
 
-    // pitchConfig.inverted(false).idleMode(IdleMode.kCoast);
-    // pitchConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    // pitchConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
-    // pitchConfig.closedLoop.pid(
-    //     TurretConstants.Hood.P, TurretConstants.Hood.I, TurretConstants.Hood.D);
-    // pitchConfig.smartCurrentLimit(TurretConstants.Hood.CURRENT_LIMIT);
-    // pitchConfig
-    //     .softLimit
-    //     .forwardSoftLimit(TurretConstants.MAX_DISTANCE_PITCH)
-    //     .reverseSoftLimit(TurretConstants.MIN_DISTANCE_PITCH);
-    // pitchConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
-    // pitchMotor.configure(
-    //     pitchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // turretPitch =
-    // TunableSparkMaxPid.create(
-    //     "Turret Pitch", pitchMotor, pitchConfig, TurretConstants.MIN_DISTANCE_PITCH);
+    leaderConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
 
-    yawConfig.inverted(true).idleMode(IdleMode.kCoast);
-    yawConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    yawConfig
+    SparkFlexConfig followerConfig = new SparkFlexConfig();
+    followerConfig.follow(flywheelLeader.getDeviceId(), true);
+    followerConfig.idleMode(IdleMode.kCoast).inverted(false);
+    followerConfig.smartCurrentLimit(TurretConstants.Flywheel.CURRENT_LIMIT);
+
+    followerConfig
+        .closedLoop
+        .feedbackSensor(com.revrobotics.spark.FeedbackSensor.kPrimaryEncoder)
+        .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
+
+    followerConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
+
+    flywheelLeader.configure(
+        leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    flywheelFollower.configure(
+        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    turretFlywheelSetpoint =
+        TunableSparkFlexPid.create("Turret Flywheel", flywheelLeader, leaderConfig, 0);
+  }
+
+  private void configureHood() {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.inverted(false).idleMode(IdleMode.kCoast);
+    config.smartCurrentLimit(TurretConstants.Hood.CURRENT_LIMIT);
+
+    config.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
+
+    config
+        .closedLoop
+        .feedbackSensor(com.revrobotics.spark.FeedbackSensor.kAbsoluteEncoder)
+        .pid(TurretConstants.Hood.P, TurretConstants.Hood.I, TurretConstants.Hood.D);
+
+    config
+        .softLimit
+        .forwardSoftLimit(TurretConstants.MAX_DISTANCE_PITCH)
+        .reverseSoftLimit(TurretConstants.MIN_DISTANCE_PITCH)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimitEnabled(true);
+
+    hoodMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    turretHoodSetpoint =
+        TunableSparkMaxPid.create(
+            "Turret Hood", hoodMotor, config, TurretConstants.MIN_DISTANCE_PITCH);
+  }
+
+  private void configureYaw() {
+    SparkMaxConfig config = new SparkMaxConfig();
+    double degreesPerEncoderRev = 360 * TurretConstants.Yaw.GEAR_RATIO;
+
+    config.inverted(true).idleMode(IdleMode.kCoast);
+    config.smartCurrentLimit(25);
+
+    config
         .absoluteEncoder
         .positionConversionFactor(degreesPerEncoderRev)
-        .velocityConversionFactor(6);
-    yawConfig.absoluteEncoder.inverted(false);
-    yawConfig.closedLoop.pid(TurretConstants.Yaw.P, TurretConstants.Yaw.I, TurretConstants.Yaw.D);
-    // yawConfig.absoluteEncoder.zeroOffset(0.3404425);
-    yawConfig.absoluteEncoder.zeroCentered(true);
-    yawConfig.smartCurrentLimit(20);
-    yawConfig
+        .velocityConversionFactor(degreesPerEncoderRev / 60.0)
+        .zeroCentered(true);
+
+    config
+        .closedLoop
+        .feedbackSensor(com.revrobotics.spark.FeedbackSensor.kAbsoluteEncoder)
+        .pid(TurretConstants.Yaw.P, TurretConstants.Yaw.I, TurretConstants.Yaw.D);
+
+    config
         .softLimit
         .forwardSoftLimit(TurretConstants.MAX_YAW)
-        .reverseSoftLimit(TurretConstants.MIN_YAW);
-    yawConfig.softLimit.forwardSoftLimitEnabled(true).reverseSoftLimitEnabled(true);
-    yawMotor.configure(yawConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // turretAngle = TunableSparkMaxPid.create("Turret Angle", yawMotor, yawConfig, 0);
+        .reverseSoftLimit(TurretConstants.MIN_YAW)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimitEnabled(true);
+
+    config.closedLoop.feedForward.kS(TurretConstants.Yaw.S);
+
+    yawMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    turretYawSetpoint = TunableSparkMaxPid.create("Turret Yaw", yawMotor, config, 0);
   }
 
   public void run() {
-    // yawController.setSetpoint(turretAngle, ControlType.kPosition);
-    // pitchController.setSetpoint(turretPitch, ControlType.kPosition);
-    flywheelController.setSetpoint(flywheelRPM, ControlType.kVelocity);
-    // System.out.println("Flywheel: " + flywheelRPM + " Pitch: " + turretPitch);
+    yawController.setSetpoint(yawSetpointDegrees, ControlType.kPosition);
+    hoodController.setSetpoint(hoodSetpointDegrees, ControlType.kPosition);
+    flywheelController.setSetpoint(flywheelSetpointRPM, ControlType.kVelocity);
   }
 
-  public void setFlywheelRPM(double flywheelRPM) {
-    this.flywheelRPM = flywheelRPM;
+  public void setFlywheelRPM(double rpm) {
+    this.flywheelSetpointRPM = rpm;
+  }
+
+  public void setTurretAngle(double degrees) {
+    this.yawSetpointDegrees = degrees;
+  }
+
+  public void setHoodAngle(double degrees) {
+    this.hoodSetpointDegrees = degrees;
   }
 
   public double getFlywheelRPM() {
-    return flyWheelMotor.getEncoder().getVelocity();
+    return flywheelLeader.getEncoder().getVelocity();
   }
 
   public double getTurretAngle() {
     return yawMotor.getAbsoluteEncoder().getPosition();
   }
 
-  public void setTurretAngle(double degrees) {
-    turretAngle = degrees;
-  }
-
-  public void setTurretHubDistance(double distance) {
-    // System.out.println("TurretAngle " + turretPitch.get() + " | DistanceToHub: " + distance);
-    // System.out.println("doing shit");
-    turretPitch =
-        HelperFunctions.map(
-            distance,
-            TurretConstants.MIN_DISTANCE,
-            TurretConstants.MAX_DISTANCE,
-            TurretConstants.MIN_DISTANCE_PITCH,
-            TurretConstants.MAX_DISTANCE_PITCH);
-    flywheelRPM =
-        HelperFunctions.map(
-            distance,
-            TurretConstants.MIN_DISTANCE,
-            TurretConstants.MAX_DISTANCE,
-            TurretConstants.MIN_DISTANCE_RPM,
-            TurretConstants.MAX_DISTANCE_RPM);
-  }
-
   public void reset() {
-    turretAngle = 0;
-    turretPitch = TurretConstants.MAX_DISTANCE_PITCH;
-    flywheelRPM = 0;
-    flyWheelMotor.stopMotor();
+    yawSetpointDegrees = 0;
+    hoodSetpointDegrees = TurretConstants.MIN_DISTANCE_PITCH;
+    flywheelSetpointRPM = 0;
+    flywheelLeader.stopMotor();
+    flywheelFollower.stopMotor();
   }
 }
