@@ -16,7 +16,7 @@ public final class Constants {
   public static final class DrivebaseConstants {
     public static final double ROBOT_MASS = 63 * 0.453592; // 63lbs to kg
     public static final double MAX_SPEED = Units.feetToMeters(14.5);
-    public static final double MAX_CREEP_SPEED = Units.feetToMeters(2.5);
+    public static final double MAX_CREEP_SPEED = Units.feetToMeters(3);
     public static final double MAX_ANGULAR_VELOCITY = 5.627209491911525; // radians per second
     public static final double MAX_CREEP_ANGULAR_VELOCITY = 3;
     public static final double CRAZY_SPIN_SPEED = Units.feetToMeters(3);

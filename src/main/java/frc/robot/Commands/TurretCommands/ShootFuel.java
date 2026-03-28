@@ -89,8 +89,19 @@ public class ShootFuel extends Command {
 
     double virtualDistance = virtualTarget.getDistance(turretFieldPos);
 
-    double targetRPM = flywheelMap.get(virtualDistance);
-    double targetHoodAngle = hoodMap.get(virtualDistance);
+    double targetRPM;
+    double targetHoodAngle;
+    ;
+
+    if (field.isRobotInNeutralZone(robotPose)) {
+      // Use your defined MAX constants instead of the map
+      targetRPM = 4500;
+      targetHoodAngle = 300;
+    } else {
+      // Use the maps for normal "Sniper" mode
+      targetRPM = flywheelMap.get(virtualDistance);
+      targetHoodAngle = hoodMap.get(virtualDistance);
+    }
 
     Rotation2d fieldAngleToTarget = virtualTarget.minus(turretFieldPos).getAngle();
     Rotation2d robotRelativeAngle =
@@ -108,6 +119,27 @@ public class ShootFuel extends Command {
     boolean inNeutralZone = field.isRobotInNeutralZone(robotPose);
     boolean validZone =
         field.isRobotInTopNeutralZone(robotPose) || field.isRobotInBottomNeutralZone(robotPose);
+
+    double currentAngle = turret.getTurretAngle();
+    double deadzoneCenter = -90.0;
+    double tolerance = 40.0;
+
+    // Check if the turret is between -120 and -60
+    boolean inDeadzone =
+        (currentAngle > (deadzoneCenter - tolerance)
+            && currentAngle < (deadzoneCenter + tolerance));
+
+    // If we are in the deadzone, kill the motors and show a warning light
+    if (inDeadzone) {
+      lights.requestLEDState(
+          new LEDRequest(LEDState.BLINK)
+              .withColour(Color.kWhite)
+              .withPriority(1)
+              .withBlinkRate(0.15));
+      feeder.set(0, 0);
+      hopper.set(0);
+      return;
+    }
 
     // if in hub slot in neutral field
     if (inNeutralZone && !validZone) {
@@ -170,6 +202,7 @@ public class ShootFuel extends Command {
     flywheelMap.put(3.76, 4050.);
     flywheelMap.put(4.16, 4100.);
     flywheelMap.put(4.5, 4200.);
+    flywheelMap.put(5., 4600.);
 
     // Distance (m) -> Hood Angle (Degrees)
     hoodMap.put(2.27, 325.);
@@ -179,6 +212,7 @@ public class ShootFuel extends Command {
     hoodMap.put(3.76, 287.);
     hoodMap.put(4.16, 285.);
     hoodMap.put(4.5, 283.);
+    hoodMap.put(5., 285.);
 
     // Distance (m) -> Time of Flight (seconds)
     tofMap.put(2.27, 1.16);
@@ -188,6 +222,7 @@ public class ShootFuel extends Command {
     tofMap.put(3.76, 1.19);
     tofMap.put(4.16, 1.21);
     tofMap.put(4.5, 1.35);
+    tofMap.put(5., 1.5);
   }
 
   @Override

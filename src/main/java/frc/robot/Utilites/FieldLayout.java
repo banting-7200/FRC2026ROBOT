@@ -69,11 +69,11 @@ public class FieldLayout {
   }
 
   public boolean isRobotInTopNeutralZone(Pose2d robotPose) {
-    return (robotPose.getY() > 4.8);
+    return (robotPose.getY() > 5);
   }
 
   public boolean isRobotInBottomNeutralZone(Pose2d robotPose) {
-    return robotPose.getY() < 3.1;
+    return robotPose.getY() < 2.9;
   }
 
   public boolean isRobotNearTrench(Pose2d robotPose) {
