@@ -319,5 +319,11 @@ public class RobotContainer {
                 () -> intake.setState(IntakeState.NORMAL),
                 intake)
             .withTimeout(8));
+
+    NamedCommands.registerCommand(
+        "StartIntaking",
+        Commands.runOnce(() -> intake.setState(IntakeState.INTAKING_FUEL), intake));
+    NamedCommands.registerCommand(
+        "StopIntaking", Commands.runOnce(() -> intake.setState(IntakeState.NORMAL), intake));
   }
 }

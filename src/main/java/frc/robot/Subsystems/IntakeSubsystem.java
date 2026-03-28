@@ -128,11 +128,11 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
     intakeController.setSetpoint(intakeRPM.get(), ControlType.kVelocity);
 
-    System.out.println(
-        "Going to: "
-            + pivotAngle
-            + " Currently at: "
-            + pivotMotor.getAbsoluteEncoder().getPosition());
+    // System.out.println(
+    //     "Going to: "
+    //         + pivotAngle
+    //         + " Currently at: "
+    //         + pivotMotor.getAbsoluteEncoder().getPosition());
   }
 
   public void agitate() {

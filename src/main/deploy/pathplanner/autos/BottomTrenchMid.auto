@@ -11,40 +11,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "StartIntaking"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "BottomTrenchToFuel"
           }
         },
         {
-          "type": "deadline",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "BottomFuelPickup"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeFuel"
-                }
-              }
-            ]
+            "pathName": "BottomFuelPickup"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIntaking"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "BottomBumpToZone"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "FromBottomBumpPointHub"
           }
         },
         {

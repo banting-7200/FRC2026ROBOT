@@ -41,27 +41,27 @@ public class FieldLayout {
   }
 
   public Pose2d getBlueHubPose() {
-    return new Pose2d(4.62, 4.5, new Rotation2d(0)); // Meters
+    return new Pose2d(4.62, 4, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getRedHubPose() {
-    return new Pose2d(11.9, 4.5, new Rotation2d(0)); // Meters
+    return new Pose2d(11.9, 4, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getBlueTopPassingPose() {
-    return new Pose2d(2.6, 5.6, new Rotation2d(0));
+    return new Pose2d(1.6, 5, new Rotation2d(0));
   }
 
   public Pose2d getBlueBottomPassingPose() {
-    return new Pose2d(2.6, 2.0, new Rotation2d(0));
+    return new Pose2d(1.6, 2.5, new Rotation2d(0));
   }
 
   public Pose2d getRedTopPassingPose() {
-    return new Pose2d(14.5, 5.6, new Rotation2d(0));
+    return new Pose2d(14.5, 5, new Rotation2d(0));
   }
 
   public Pose2d getRedBottomPassingPose() {
-    return new Pose2d(14.5, 2.0, new Rotation2d(0));
+    return new Pose2d(14.5, 2.5, new Rotation2d(0));
   }
 
   public boolean isRobotInNeutralZone(Pose2d robotPose) {

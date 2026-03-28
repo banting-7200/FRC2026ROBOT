@@ -78,10 +78,14 @@ public class ShootFuel extends Command {
     double distanceToTarget = turretFieldPos.getDistance(targetPosition);
     double timeOfFlight = tofMap.get(distanceToTarget);
 
+    var fieldRelativeVelocity =
+        new Translation2d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond)
+            .rotateBy(robotPose.getRotation());
+
     Translation2d virtualTarget =
         new Translation2d(
-            targetPosition.getX() - (robotVelocity.vxMetersPerSecond * timeOfFlight),
-            targetPosition.getY() - (robotVelocity.vyMetersPerSecond * timeOfFlight));
+            targetPosition.getX() - (fieldRelativeVelocity.getX() * timeOfFlight),
+            targetPosition.getY() - (fieldRelativeVelocity.getY() * timeOfFlight));
 
     double virtualDistance = virtualTarget.getDistance(turretFieldPos);
 
@@ -115,6 +119,8 @@ public class ShootFuel extends Command {
     if (inNeutralZone) {
       lights.requestLEDState(
           new LEDRequest(LEDState.BLINK).withBlinkRate(0.1).withColour(Color.kBlue));
+      feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);
+      hopper.set(HopperConstants.SHOOTING_RPM);
       return;
     }
 

@@ -11,28 +11,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "StartIntaking"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "TopTrenchToFuel"
           }
         },
         {
-          "type": "deadline",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "PickupTopFuel"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeFuel"
-                }
-              }
-            ]
+            "pathName": "PickupTopFuel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIntaking"
           }
         },
         {

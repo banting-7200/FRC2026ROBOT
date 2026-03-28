@@ -30,7 +30,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   private double flywheelSetpointRPM = 0;
   private double yawSetpointDegrees = 0;
-  private double hoodSetpointDegrees = 0;
+  private double hoodSetpointDegrees = TurretConstants.MAX_DISTANCE_PITCH;
 
   DoubleEntry turretFlywheelSetpoint;
   DoubleEntry turretYawSetpoint;
@@ -109,7 +109,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     turretHoodSetpoint =
         TunableSparkMaxPid.create(
-            "Turret Hood", hoodMotor, config, TurretConstants.MIN_DISTANCE_PITCH);
+            "Turret Hood", hoodMotor, config, TurretConstants.MAX_DISTANCE_PITCH);
   }
 
   private void configureYaw() {
@@ -172,7 +172,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   public void reset() {
     yawSetpointDegrees = 0;
-    hoodSetpointDegrees = TurretConstants.MIN_DISTANCE_PITCH;
+    hoodSetpointDegrees = TurretConstants.MAX_DISTANCE_PITCH;
     flywheelSetpointRPM = 0;
     flywheelLeader.stopMotor();
     flywheelFollower.stopMotor();
