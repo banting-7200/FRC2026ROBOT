@@ -202,7 +202,7 @@ public class ShootFuel extends Command {
     flywheelMap.put(3.76, 4050.);
     flywheelMap.put(4.16, 4100.);
     flywheelMap.put(4.5, 4200.);
-    flywheelMap.put(5., 4600.);
+    flywheelMap.put(5., 4850.);
 
     // Distance (m) -> Hood Angle (Degrees)
     hoodMap.put(2.27, 325.);

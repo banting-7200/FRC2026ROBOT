@@ -98,11 +98,11 @@ public class IntakeSubsystem extends SubsystemBase {
       case INTAKING_FUEL:
         isAgitating = false;
         pivotAngle = IntakeConstants.INTAKE_POSITION;
-        intakeRPM.set(5000);
+        intakeRPM.set(6100);
         break;
       case AGITATING_FUEL:
         isAgitating = true;
-        intakeRPM.set(2000);
+        intakeRPM.set(3000);
         break;
       case STORED:
         isAgitating = false;
