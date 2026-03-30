@@ -1,5 +1,9 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -12,7 +16,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utilites.Constants.CANIds;
 import frc.robot.Utilites.Constants.IntakeConstants;
-import frc.robot.Utilites.Tunable.TunableSparkMaxPid;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -24,11 +27,12 @@ public class IntakeSubsystem extends SubsystemBase {
   };
 
   SparkMax pivotMotor;
-  SparkMax intakeMotor;
   SparkClosedLoopController pivotController;
-  SparkClosedLoopController intakeController;
   SparkMaxConfig pivotConfig;
-  SparkMaxConfig intakeConfig;
+
+  TalonFX intakeMotor;
+  VelocityVoltage intakeVelocityControl = new VelocityVoltage(0).withSlot(0);
+
   IdleMode idleMode;
   double setpoint;
   boolean isAgitating = false;
@@ -36,29 +40,23 @@ public class IntakeSubsystem extends SubsystemBase {
   boolean isSpinning = false;
   double intakeVel = 0;
   double agitatingSpeedFactor = 7;
-  // DoubleEntry pivotAngle;
   DoubleEntry intakeRPM;
   double pivotAngle = IntakeConstants.NORMAL_POSITION;
 
   public IntakeSubsystem() {
-    intakeMotor = new SparkMax(CANIds.INTAKE_ID, MotorType.kBrushless);
-    intakeController = intakeMotor.getClosedLoopController();
-    intakeConfig = new SparkMaxConfig();
+    intakeMotor = new TalonFX(CANIds.INTAKE_ID);
+    TalonFXConfiguration intakeConfigFX = new TalonFXConfiguration();
 
-    intakeConfig
-        .closedLoop
-        .pid(IntakeConstants.Intake.P, IntakeConstants.Intake.I, IntakeConstants.Intake.D)
-        .feedForward
-        .kV(IntakeConstants.Intake.V);
-    intakeConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    intakeConfig.voltageCompensation(12.5);
-    intakeConfig.smartCurrentLimit(IntakeConstants.Intake.CURRENT_LIMIT);
-    intakeConfig.idleMode(IdleMode.kCoast);
-    intakeMotor.configure(
-        intakeConfig,
-        com.revrobotics.ResetMode.kResetSafeParameters,
-        com.revrobotics.PersistMode.kPersistParameters);
-    intakeRPM = TunableSparkMaxPid.create("IntakeRPM", intakeMotor, intakeConfig, 0);
+    intakeConfigFX.Slot0.kP = IntakeConstants.Intake.P;
+    intakeConfigFX.Slot0.kI = IntakeConstants.Intake.I;
+    intakeConfigFX.Slot0.kD = IntakeConstants.Intake.D;
+    intakeConfigFX.Slot0.kV = IntakeConstants.Intake.V;
+
+    intakeConfigFX.CurrentLimits.SupplyCurrentLimit = IntakeConstants.Intake.CURRENT_LIMIT;
+    intakeConfigFX.CurrentLimits.SupplyCurrentLimitEnable = true;
+    intakeConfigFX.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    intakeMotor.getConfigurator().apply(intakeConfigFX);
 
     pivotMotor = new SparkMax(CANIds.INTAKE_PIVOT_ID, MotorType.kBrushless);
     pivotConfig = new SparkMaxConfig();
@@ -72,16 +70,11 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.absoluteEncoder.positionConversionFactor(360).velocityConversionFactor(1);
     pivotConfig.closedLoop.pid(
         IntakeConstants.Pivot.P, IntakeConstants.Pivot.I, IntakeConstants.Pivot.D);
-    // pivotConfig.softLimit.forwardSoftLimit(agitatingSpeedFactor)
 
     pivotMotor.configure(
         pivotConfig,
         com.revrobotics.ResetMode.kResetSafeParameters,
         com.revrobotics.PersistMode.kPersistParameters);
-
-    // pivotAngle =
-    //     TunableSparkMaxPid.create(
-    //         "Pivot Angle", pivotMotor, pivotConfig, IntakeConstants.NORMAL_POSITION);
   }
 
   public void setIdleMode(IdleMode idleMode) {
@@ -98,21 +91,21 @@ public class IntakeSubsystem extends SubsystemBase {
       case INTAKING_FUEL:
         isAgitating = false;
         pivotAngle = IntakeConstants.INTAKE_POSITION;
-        intakeRPM.set(6100);
+        intakeVel = 2000; // Updated to use local variable
         break;
       case AGITATING_FUEL:
         isAgitating = true;
-        intakeRPM.set(3000);
+        intakeVel = 1000;
         break;
       case STORED:
         isAgitating = false;
         setpoint = IntakeConstants.STORED_POSITION;
-        intakeRPM.set(0);
+        intakeVel = 0;
         break;
       case NORMAL:
         isAgitating = false;
         pivotAngle = IntakeConstants.NORMAL_POSITION;
-        intakeRPM.set(0);
+        intakeVel = 0;
         break;
     }
   }
@@ -125,24 +118,18 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void run() {
     if (isAgitating) agitate();
-    pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
-    intakeController.setSetpoint(intakeRPM.get(), ControlType.kVelocity);
 
-    // System.out.println(
-    //     "Going to: "
-    //         + pivotAngle
-    //         + " Currently at: "
-    //         + pivotMotor.getAbsoluteEncoder().getPosition());
+    pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
+    intakeMotor.setControl(intakeVelocityControl.withVelocity(intakeVel / 60.0));
+    // System.out.println(intakeMotor.getVelocity());
   }
 
   public void agitate() {
     double time = Timer.getFPGATimestamp();
-
     double midpoint =
         (IntakeConstants.LOW_AGITATE_POSITION + IntakeConstants.HIGH_AGITATE_POSITION) / 2.0;
     double amplitude =
         (IntakeConstants.HIGH_AGITATE_POSITION - IntakeConstants.LOW_AGITATE_POSITION) / 2.0;
-
     pivotAngle = midpoint + amplitude * Math.sin(time * agitatingSpeedFactor);
   }
 

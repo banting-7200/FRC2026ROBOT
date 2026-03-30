@@ -145,6 +145,7 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void run() {
+    // System.out.println(yawSetpointDegrees);
     yawController.setSetpoint(yawSetpointDegrees, ControlType.kPosition);
     hoodController.setSetpoint(hoodSetpointDegrees, ControlType.kPosition);
     flywheelController.setSetpoint(flywheelSetpointRPM, ControlType.kVelocity);

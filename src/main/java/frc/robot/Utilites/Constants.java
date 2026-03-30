@@ -16,7 +16,7 @@ public final class Constants {
   public static final class DrivebaseConstants {
     public static final double ROBOT_MASS = 63 * 0.453592; // 63lbs to kg
     public static final double MAX_SPEED = Units.feetToMeters(14.5);
-    public static final double MAX_CREEP_SPEED = Units.feetToMeters(3);
+    public static final double MAX_CREEP_SPEED = Units.feetToMeters(3.25);
     public static final double MAX_ANGULAR_VELOCITY = 5.627209491911525; // radians per second
     public static final double MAX_CREEP_ANGULAR_VELOCITY = 3;
     public static final double CRAZY_SPIN_SPEED = Units.feetToMeters(3);
@@ -66,11 +66,11 @@ public final class Constants {
     }
 
     public static final class Intake {
-      public static final double P = 0.0001;
+      public static final double P = 0.01;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double V = 0.0026;
-      public static final int CURRENT_LIMIT = 20;
+      public static final double V = 0.7;
+      public static final int CURRENT_LIMIT = 40;
     }
 
     public static final double INTAKE_POSITION = 106;
@@ -108,10 +108,10 @@ public final class Constants {
   // #region Turret
   public static final class TurretConstants {
     public static final class Yaw {
-      public static final double P = 0.02; // 0.02
+      public static final double P = 0.017; // 0.02
       public static final double I = 0;
-      public static final double D = 0.01; // 0.01
-      public static final double S = 0.25;
+      public static final double D = 0.007; // 0.01
+      public static final double S = 0.23;
       public static final double CURRENT_LIMIT = 40;
       public static final double GEAR_RATIO = 1.6; // 15 / 9.375
     }
