@@ -88,7 +88,7 @@ public final class Constants {
     public static final double I = 0;
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
-    public static final double SHOOTING_RPM = 1600;
+    public static final double SHOOTING_RPM = 2800;
   }
 
   // #endregion
@@ -100,8 +100,8 @@ public final class Constants {
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
 
-    public static final double BELT_RPM = 1000;
-    public static final double FLYWHEEL_RPM = 2200;
+    public static final double BELT_RPM = 1750;
+    public static final double FLYWHEEL_RPM = 3850;
   }
 
   // #endregion

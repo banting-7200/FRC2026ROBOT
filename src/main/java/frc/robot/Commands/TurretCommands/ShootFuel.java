@@ -94,11 +94,9 @@ public class ShootFuel extends Command {
     ;
 
     if (field.isRobotInNeutralZone(robotPose)) {
-      // Use your defined MAX constants instead of the map
       targetRPM = 4500;
       targetHoodAngle = 300;
     } else {
-      // Use the maps for normal "Sniper" mode
       targetRPM = flywheelMap.get(virtualDistance);
       targetHoodAngle = hoodMap.get(virtualDistance);
     }
