@@ -58,9 +58,10 @@ public final class Constants {
   // #region Intake
   public static final class IntakeConstants {
     public static final class Pivot {
-      public static final double P = 0.012;
+      public static final double P = 0.012; // 0.012
       public static final double I = 0;
-      public static final double D = 0.007;
+      public static final double D = 0.007; // 0.007
+      public static final double G = 0.0166;
       public static final int CURRENT_LIMIT = 20;
       public static final boolean INVERSION = false;
     }
@@ -73,12 +74,12 @@ public final class Constants {
       public static final int CURRENT_LIMIT = 40;
     }
 
-    public static final double INTAKE_POSITION = 106;
-    public static final double STORED_POSITION = 191; // 198
-    public static final double NORMAL_POSITION = 191; // 160
+    public static final double INTAKE_POSITION = 4;
+    public static final double STORED_POSITION = 130;
+    public static final double NORMAL_POSITION = 86;
 
-    public static final double LOW_AGITATE_POSITION = 120;
-    public static final double HIGH_AGITATE_POSITION = 191;
+    public static final double LOW_AGITATE_POSITION = 70;
+    public static final double HIGH_AGITATE_POSITION = 110;
 
     public static final double INTAKE_RPM = 0;
   }

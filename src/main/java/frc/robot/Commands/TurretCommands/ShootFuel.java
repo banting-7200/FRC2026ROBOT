@@ -42,6 +42,8 @@ public class ShootFuel extends Command {
   private final InterpolatingDoubleTreeMap hoodMap = new InterpolatingDoubleTreeMap();
   private final InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
 
+  private final boolean isAtSpeed = false;
+
   public ShootFuel(
       TurretSubsystem turret,
       SwerveSubsystem swerve,
@@ -91,11 +93,10 @@ public class ShootFuel extends Command {
 
     double targetRPM;
     double targetHoodAngle;
-    ;
 
     if (field.isRobotInNeutralZone(robotPose)) {
-      targetRPM = 4500;
-      targetHoodAngle = 300;
+      targetRPM = 6000;
+      targetHoodAngle = 325;
     } else {
       targetRPM = flywheelMap.get(virtualDistance);
       targetHoodAngle = hoodMap.get(virtualDistance);
@@ -106,14 +107,14 @@ public class ShootFuel extends Command {
         fieldAngleToTarget.minus(robotPose.getRotation().plus(Rotation2d.fromDegrees(180)));
     double filteredAngleDegrees = turretAngleFilter.calculate(robotRelativeAngle.getDegrees());
 
-    turret.setTurretAngle(filteredAngleDegrees);
     turret.setFlywheelRPM(targetRPM);
+    turret.setTurretAngle(filteredAngleDegrees);
     turret.setHoodAngle(targetHoodAngle);
 
-    handleFeederAndLights(robotPose, virtualDistance);
+    handleFeederAndLights(robotPose, virtualDistance, targetRPM);
   }
 
-  private void handleFeederAndLights(Pose2d robotPose, double distance) {
+  private void handleFeederAndLights(Pose2d robotPose, double distance, double targetRPM) {
     boolean inNeutralZone = field.isRobotInNeutralZone(robotPose);
     boolean validZone =
         field.isRobotInTopNeutralZone(robotPose) || field.isRobotInBottomNeutralZone(robotPose);
@@ -155,7 +156,7 @@ public class ShootFuel extends Command {
     }
 
     // Check if both flywheel and turret are ready
-    if (inNeutralZone || turret.getFlywheelRPM() > 500) {
+    if (inNeutralZone || turret.getFlywheelRPM() > targetRPM - 1000) {
       lights.requestLEDState(
           new LEDRequest(LEDState.SOLID).withColour(Color.kPurple).withPriority(1));
       feeder.set(FeederConstants.BELT_RPM, FeederConstants.FLYWHEEL_RPM);

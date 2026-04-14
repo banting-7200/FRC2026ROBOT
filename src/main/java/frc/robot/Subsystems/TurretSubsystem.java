@@ -64,6 +64,7 @@ public class TurretSubsystem extends SubsystemBase {
         .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
 
     leaderConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
+    // leaderConfig.voltageCompensation(9);
 
     SparkFlexConfig followerConfig = new SparkFlexConfig();
     followerConfig.follow(flywheelLeader.getDeviceId(), true);
@@ -76,6 +77,7 @@ public class TurretSubsystem extends SubsystemBase {
         .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
 
     followerConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
+    // followerConfig.voltageCompensation(9);
 
     flywheelLeader.configure(
         leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
