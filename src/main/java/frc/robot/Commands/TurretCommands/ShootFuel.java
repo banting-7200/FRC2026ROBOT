@@ -90,13 +90,12 @@ public class ShootFuel extends Command {
             targetPosition.getY() - (fieldRelativeVelocity.getY() * timeOfFlight));
 
     double virtualDistance = virtualTarget.getDistance(turretFieldPos);
-
     double targetRPM;
     double targetHoodAngle;
 
     if (field.isRobotInNeutralZone(robotPose)) {
-      targetRPM = 6000;
-      targetHoodAngle = 325;
+      targetRPM = 6700;
+      targetHoodAngle = 260;
     } else {
       targetRPM = flywheelMap.get(virtualDistance);
       targetHoodAngle = hoodMap.get(virtualDistance);
@@ -129,7 +128,7 @@ public class ShootFuel extends Command {
             && currentAngle < (deadzoneCenter + tolerance));
 
     // If we are in the deadzone, kill the motors and show a warning light
-    if (inDeadzone) {
+    if (inDeadzone && !field.isRobotInNeutralZone(robotPose)) {
       lights.requestLEDState(
           new LEDRequest(LEDState.BLINK)
               .withColour(Color.kWhite)
@@ -194,34 +193,34 @@ public class ShootFuel extends Command {
 
   public void setupMaps() {
     // Distance (m) -> RPM
-    flywheelMap.put(2.27, 3450.);
-    flywheelMap.put(2.59, 3600.);
-    flywheelMap.put(2.97, 3800.);
-    flywheelMap.put(3.37, 4000.);
-    flywheelMap.put(3.76, 4050.);
-    flywheelMap.put(4.16, 4100.);
-    flywheelMap.put(4.5, 4200.);
-    flywheelMap.put(5., 5000.);
+    flywheelMap.put(2.23, 3400.);
+    flywheelMap.put(2.70, 3500.);
+    flywheelMap.put(3.18, 3700.);
+    flywheelMap.put(3.61, 3900.);
+    flywheelMap.put(4.13, 4300.);
+    flywheelMap.put(4.61, 4450.);
+    flywheelMap.put(5.15, 4800.);
+    flywheelMap.put(5.83, 5300.);
 
     // Distance (m) -> Hood Angle (Degrees)
-    hoodMap.put(2.27, 325.);
-    hoodMap.put(2.59, 322.);
-    hoodMap.put(2.97, 319.);
-    hoodMap.put(3.37, 290.);
-    hoodMap.put(3.76, 287.);
-    hoodMap.put(4.16, 285.);
-    hoodMap.put(4.5, 283.);
-    hoodMap.put(5., 285.);
+    hoodMap.put(2.23, 348.);
+    hoodMap.put(2.70, 345.);
+    hoodMap.put(3.18, 337.);
+    hoodMap.put(3.61, 331.);
+    hoodMap.put(4.13, 322.);
+    hoodMap.put(4.61, 306.);
+    hoodMap.put(5.15, 295.);
+    hoodMap.put(5.83, 286.);
 
     // Distance (m) -> Time of Flight (seconds)
-    tofMap.put(2.27, 1.16);
-    tofMap.put(2.59, 1.12);
-    tofMap.put(2.97, 1.13);
-    tofMap.put(3.37, 1.13);
-    tofMap.put(3.76, 1.19);
-    tofMap.put(4.16, 1.21);
-    tofMap.put(4.5, 1.35);
-    tofMap.put(5., 1.5);
+    tofMap.put(2.23, 0.99);
+    tofMap.put(2.70, 1.04);
+    tofMap.put(3.18, 1.10);
+    tofMap.put(3.61, 1.16);
+    tofMap.put(4.13, 1.17);
+    tofMap.put(4.61, 1.23);
+    tofMap.put(5.15, 1.28);
+    tofMap.put(5.83, 1.36);
   }
 
   @Override

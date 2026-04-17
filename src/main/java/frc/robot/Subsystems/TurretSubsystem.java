@@ -64,7 +64,7 @@ public class TurretSubsystem extends SubsystemBase {
         .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
 
     leaderConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
-    // leaderConfig.voltageCompensation(9);
+    leaderConfig.voltageCompensation(12);
 
     SparkFlexConfig followerConfig = new SparkFlexConfig();
     followerConfig.follow(flywheelLeader.getDeviceId(), true);
@@ -77,7 +77,7 @@ public class TurretSubsystem extends SubsystemBase {
         .pid(TurretConstants.Flywheel.P, TurretConstants.Flywheel.I, TurretConstants.Flywheel.D);
 
     followerConfig.closedLoop.feedForward.kV(TurretConstants.Flywheel.V);
-    // followerConfig.voltageCompensation(9);
+    followerConfig.voltageCompensation(12);
 
     flywheelLeader.configure(
         leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -147,10 +147,13 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void run() {
-    // System.out.println(yawSetpointDegrees);
     yawController.setSetpoint(yawSetpointDegrees, ControlType.kPosition);
     hoodController.setSetpoint(hoodSetpointDegrees, ControlType.kPosition);
     flywheelController.setSetpoint(flywheelSetpointRPM, ControlType.kVelocity);
+    // yawController.setSetpoint(yawSetpointDegrees, ControlType.kPosition);
+    // hoodController.setSetpoint(turretHoodSetpoint.get(), ControlType.kPosition);
+    // flywheelController.setSetpoint(turretFlywheelSetpoint.get(), ControlType.kVelocity);
+    // System.out.println("Turret RPM: " + getFlywheelRPM());
   }
 
   public void setFlywheelRPM(double rpm) {

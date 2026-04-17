@@ -57,11 +57,11 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.5,
+    "velocity": 1.7,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RightTrenchMid",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 100.0

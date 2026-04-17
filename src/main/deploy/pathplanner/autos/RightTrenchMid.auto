@@ -29,12 +29,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "StopIntaking"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "BottomBumpToZone"
@@ -47,7 +41,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 6.0
+                  "waitTime": 7.5
                 }
               },
               {
@@ -55,14 +49,14 @@
                 "data": {
                   "name": "ShootFuel"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "AgitateFuel"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIntaking"
           }
         },
         {

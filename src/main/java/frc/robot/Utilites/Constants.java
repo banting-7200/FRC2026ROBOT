@@ -74,9 +74,9 @@ public final class Constants {
       public static final int CURRENT_LIMIT = 40;
     }
 
-    public static final double INTAKE_POSITION = 4;
-    public static final double STORED_POSITION = 130;
-    public static final double NORMAL_POSITION = 86;
+    public static final double INTAKE_POSITION = 10;
+    public static final double STORED_POSITION = 140;
+    public static final double NORMAL_POSITION = 100;
 
     public static final double LOW_AGITATE_POSITION = 70;
     public static final double HIGH_AGITATE_POSITION = 110;
@@ -88,8 +88,8 @@ public final class Constants {
     public static final double P = 0;
     public static final double I = 0;
     public static final double D = 0;
-    public static final double CURRENT_LIMIT = 40;
-    public static final double SHOOTING_RPM = 2800;
+    public static final double CURRENT_LIMIT = 25;
+    public static final double SHOOTING_RPM = 1800;
   }
 
   // #endregion
@@ -101,8 +101,8 @@ public final class Constants {
     public static final double D = 0;
     public static final double CURRENT_LIMIT = 40;
 
-    public static final double BELT_RPM = 1750;
-    public static final double FLYWHEEL_RPM = 3850;
+    public static final double BELT_RPM = 2100;
+    public static final double FLYWHEEL_RPM = 2850;
   }
 
   // #endregion
@@ -121,9 +121,9 @@ public final class Constants {
       public static final double P = 0.00001;
       public static final double I = 0;
       public static final double D = 0;
-      public static final double V = 0.0019;
+      public static final double V = 0.0018;
       public static final double S = 0;
-      public static final int CURRENT_LIMIT = 70;
+      public static final int CURRENT_LIMIT = 80;
     }
 
     public static final class Hood {
@@ -134,8 +134,8 @@ public final class Constants {
       public static final int CURRENT_LIMIT = 10;
     }
 
-    public static final double MAX_DISTANCE_PITCH = 325; // 100
-    public static final double MIN_DISTANCE_PITCH = 166; // 275
+    public static final double MAX_DISTANCE_PITCH = 350; // 100
+    public static final double MIN_DISTANCE_PITCH = 183; // 275
 
     // Max yaw -> turret rotated fully left
     public static final double MIN_YAW = -130; // -155

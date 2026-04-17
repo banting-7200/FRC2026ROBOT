@@ -117,7 +117,7 @@ public class IntakeSubsystem extends SubsystemBase {
       case INTAKING_FUEL:
         isAgitating = false;
         pivotAngle = IntakeConstants.INTAKE_POSITION;
-        intakeVel = 5000; // Updated to use local variable
+        intakeVel = 6000; // Updated to use local variable
         break;
       case AGITATING_FUEL:
         isAgitating = true;
@@ -144,11 +144,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void run() {
     if (isAgitating) agitate();
-
     pivotController.setSetpoint(pivotAngle, ControlType.kPosition);
-    // pivotMotor.setVoltage(0.2);
     intakeMotor.setControl(intakeVelocityControl.withVelocity(intakeVel / 60.0));
-    // System.out.println(intakeMotor.getVelocity());
   }
 
   public void setPivot(double speed) {
