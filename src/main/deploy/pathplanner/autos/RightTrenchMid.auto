@@ -41,7 +41,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 7.5
+                  "waitTime": 8.0
                 }
               },
               {
@@ -63,6 +63,24 @@
           "type": "path",
           "data": {
             "pathName": "BottomShootingToMid"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "UnderBottomTrenchToNeutral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BottomTrenchToFuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BottomFuelPickup2"
           }
         }
       ]

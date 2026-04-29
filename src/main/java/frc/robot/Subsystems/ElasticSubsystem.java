@@ -39,9 +39,10 @@ public class ElasticSubsystem extends SubsystemBase {
     autoChooser.addOption("RightTrenchMid", "RightTrenchMid");
     autoChooser.addOption("MoveOutLeft", "MoveOutLeft");
 
-    autoChooser.addOption("MoveBackShoot", "MoveBackShoot");
+    autoChooser.addOption("MiddleDepot", "MiddleDepot");
     autoChooser.addOption("LeftTrenchMid", "LeftTrenchMid");
     autoChooser.addOption("CrazyHaas", "CrazyHaas");
+    autoChooser.addOption("LeftDelayFullSwipe", "LeftDelayFullSwipe");
     SmartDashboard.putData("Auton Selector", autoChooser);
   }
 

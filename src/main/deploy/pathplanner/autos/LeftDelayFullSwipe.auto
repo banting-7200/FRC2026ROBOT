@@ -5,33 +5,33 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "UnderTopTrench"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "StartIntaking"
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "TopTrenchToFuel"
+            "waitTime": 3.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PickupTopFuel"
+            "pathName": "LeftTrenchToCenter"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "TopBumpToZone"
+            "pathName": "CenterSwipe"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CenterSwipeToZone"
           }
         },
         {
@@ -41,7 +41,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 8.0
+                  "waitTime": 5.0
                 }
               },
               {
@@ -60,39 +60,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "TopShootingToTrench"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "StartIntaking"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "UnderTopTrench"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "TopTrenchToFuel"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "TopFuelPickup2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StopIntaking"
+            "name": "ShootFuel"
           }
         }
       ]

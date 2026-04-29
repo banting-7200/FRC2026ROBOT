@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.7,
-        "y": 7.0
+        "y": 0.8
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.937612279461728,
-        "y": 7.077720040202009
+        "x": 7.505060240963855,
+        "y": 2.2428554216867465
       },
       "isLocked": false,
       "linkedName": null
@@ -17,27 +17,43 @@
     {
       "anchor": {
         "x": 7.7,
-        "y": 4.761245551601423
+        "y": 3.390265060240964
       },
       "prevControl": {
-        "x": 7.73579957141029,
-        "y": 5.008669056319223
+        "x": 8.095531910616174,
+        "y": 2.4718128254000273
       },
       "nextControl": {
-        "x": 7.559893238434164,
-        "y": 3.7929181494661917
+        "x": 7.417638554216868,
+        "y": 4.045927710843373
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.902977461447213,
-        "y": 5.6
+        "x": 6.2265180722891555,
+        "y": 3.390265060240964
       },
       "prevControl": {
-        "x": 6.090506502599279,
-        "y": 5.4346734784597865
+        "x": 6.565277108433736,
+        "y": 3.641602409638554
+      },
+      "nextControl": {
+        "x": 5.860779489527593,
+        "y": 3.1189106278694845
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.073530120481928,
+        "y": 1.5762650602409645
+      },
+      "prevControl": {
+        "x": 5.824175362423871,
+        "y": 1.5583150008035198
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,21 +66,21 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 2.0,
-    "maxAcceleration": 1.5,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 2.0,
-    "rotation": 180.0
+    "velocity": 0,
+    "rotation": -101.3099324740202
   },
   "reversed": false,
-  "folder": "LeftTrenchMid",
+  "folder": "RightTrenchMid",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -100.0
+    "rotation": 100.0
   },
   "useDefaultConstraints": false
 }
