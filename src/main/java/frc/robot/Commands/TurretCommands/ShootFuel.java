@@ -75,7 +75,7 @@ public class ShootFuel extends Command {
     Translation2d turretFieldPos =
         robotPose.transformBy(new Transform2d(turretOffset, new Rotation2d())).getTranslation();
 
-    Translation2d targetPosition = getTargetBasedOnAlliance(robotPose);
+    Translation2d targetPosition = field.getNetPose().getTranslation();
 
     double distanceToTarget = turretFieldPos.getDistance(targetPosition);
     double timeOfFlight = tofMap.get(distanceToTarget);
@@ -93,13 +93,13 @@ public class ShootFuel extends Command {
     double targetRPM;
     double targetHoodAngle;
 
-    if (field.isRobotInNeutralZone(robotPose)) {
-      targetRPM = 6700;
-      targetHoodAngle = 260;
-    } else {
-      targetRPM = flywheelMap.get(virtualDistance);
-      targetHoodAngle = hoodMap.get(virtualDistance);
-    }
+    // if (field.isRobotInNeutralZone(robotPose)) {
+    //   targetRPM = 6700;
+    //   targetHoodAngle = 260;
+    // } else {
+    targetRPM = flywheelMap.get(virtualDistance);
+    targetHoodAngle = hoodMap.get(virtualDistance);
+    // }
 
     Rotation2d fieldAngleToTarget = virtualTarget.minus(turretFieldPos).getAngle();
     Rotation2d robotRelativeAngle =

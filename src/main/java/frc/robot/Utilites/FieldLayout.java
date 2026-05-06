@@ -17,7 +17,7 @@ public class FieldLayout {
   public FieldLayout() {
     try {
       Path layoutPath =
-          Filesystem.getDeployDirectory().toPath().resolve("fields/2026-rebuilt-welded.json");
+          Filesystem.getDeployDirectory().toPath().resolve("fields/BaskeballFieldLayout.json");
       fieldLayout = new AprilTagFieldLayout(layoutPath);
     } catch (IOException e) {
       System.out.println("Could not load AprilTag layout");
@@ -40,12 +40,16 @@ public class FieldLayout {
     return robotPose;
   }
 
+  public Pose2d getNetPose() {
+    return new Pose2d(24.384, 6.705, new Rotation2d(0)); // Meters
+  }
+
   public Pose2d getBlueHubPose() {
     return new Pose2d(4.62, 4, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getRedHubPose() {
-    return new Pose2d(11.9, 4, new Rotation2d(0)); // Meters
+    return new Pose2d(24.384, 6.705, new Rotation2d(0)); // Meters
   }
 
   public Pose2d getBlueTopPassingPose() {
