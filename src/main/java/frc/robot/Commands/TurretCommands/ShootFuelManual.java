@@ -62,28 +62,6 @@ public class ShootFuelManual extends Command {
   }
 
   private void handleFeeder(double targetRPM) {
-
-    double currentAngle = turret.getTurretAngle();
-    double deadzoneCenter = -90.0;
-    double tolerance = 40.0;
-
-    // Check if the turret is between -120 and -60
-    boolean inDeadzone =
-        (currentAngle > (deadzoneCenter - tolerance)
-            && currentAngle < (deadzoneCenter + tolerance));
-
-    // If we are in the deadzone, kill the motors and show a warning light
-    if (inDeadzone) {
-      lights.requestLEDState(
-          new LEDRequest(LEDState.BLINK)
-              .withColour(Color.kWhite)
-              .withPriority(1)
-              .withBlinkRate(0.15));
-      feeder.set(0, 0);
-      hopper.set(0);
-      return;
-    }
-
     // Check if both flywheel and turret are ready
     if (turret.getFlywheelRPM() > targetRPM - 1000) {
       lights.requestLEDState(
