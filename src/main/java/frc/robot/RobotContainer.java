@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.TurretCommands.FixJam;
 import frc.robot.Commands.TurretCommands.ResetTurret;
-import frc.robot.Commands.TurretCommands.ShootFuel;
+// import frc.robot.Commands.TurretCommands.ShootFuel;
+import frc.robot.Commands.TurretCommands.ShootFuelManual;
 import frc.robot.Subsystems.ElasticSubsystem;
 import frc.robot.Subsystems.FeederSubsystem;
 import frc.robot.Subsystems.HopperSubsystem;
@@ -179,8 +180,8 @@ public class RobotContainer {
     operatorXbox
         .rightTrigger(0.2)
         .and(operatorXbox.a().negate())
-        .whileTrue(new ShootFuel(turret, drivebase, hopper, feeder, lights))
-        .whileFalse(new ResetTurret(turret, hopper, feeder));
+        .whileTrue(new ShootFuelManual(operatorXbox, turret, hopper, feeder, lights));
+    // .whileFalse(new ResetTurret(turret, hopper, feeder));
 
     operatorXbox
         .leftTrigger(0.2)
@@ -307,7 +308,8 @@ public class RobotContainer {
 
   public void registerNamedCommands() {
     NamedCommands.registerCommand(
-        "ShootFuel", new ShootFuel(turret, drivebase, hopper, feeder, lights).withTimeout(8));
+        "ShootFuel",
+        new ShootFuelManual(operatorXbox, turret, hopper, feeder, lights).withTimeout(8));
     NamedCommands.registerCommand(
         "IntakeFuel",
         new StartEndCommand(
